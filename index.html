@@ -673,21 +673,218 @@ body
     nav.classList.toggle('scrolled', window.scrollY > 8);
   });
 
-  // Demo del buscador: skeleton -> resultado, sin conexión real (es un mockup visual)
-  const form = document.getElementById('trackForm');
-  const skeleton = document.getElementById('skeleton');
-  const result = document.getElementById('resultCard');
+ // BUSCADOR REAL CON AFTERSHIP
+const form = document.getElementById('trackForm');
+const skeleton = document.getElementById('skeleton');
+const result = document.getElementById('resultCard');
+const trackingInput = document.getElementById('trackingNumber');
+const carrierSelect = document.getElementById('carrier');
+const submitButton = form.querySelector('button[type="submit"]');
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    result.classList.remove('show');
-    skeleton.classList.add('show');
-    window.setTimeout(() => {
-      skeleton.classList.remove('show');
-      result.classList.add('show');
-      result.scrollIntoView({behavior:'smooth', block:'nearest'});
-    }, 850);
+const statusNames = {
+  Pending: "Pendiente",
+  InfoReceived: "Información recibida",
+  InTransit: "En tránsito",
+  OutForDelivery: "En reparto",
+  AttemptFail: "Intento de entrega fallido",
+  Delivered: "Entregado",
+  AvailableForPickup: "Disponible para retirar",
+  Exception: "Requiere atención",
+  Expired: "Sin actualizaciones"
+};
+
+function safe(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function formatDate(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString("es-UY", {
+    dateStyle: "short",
+    timeStyle: "short"
   });
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const trackingNumber = trackingInput.value.trim();
+  const carrier = carrierSelect.value;
+
+  if (!trackingNumber) {
+    trackingInput.focus();
+    return;
+  }
+
+  result.classList.remove('show');
+  skeleton.classList.add('show');
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Buscando...";
+
+  try {
+    const response = await fetch("/api/track", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        trackingNumber,
+        carrier
+      })
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        payload.error ||
+        payload.meta?.message ||
+        "No pudimos consultar este envío"
+      );
+    }
+
+    const data = payload?.data;
+
+    const tracking =
+      data?.tracking ||
+      data?.trackings?.[0] ||
+      (Array.isArray(data) ? data[0] : null) ||
+      (data?.tracking_number ? data : null);
+
+    if (!tracking) {
+      throw new Error(
+        "Todavía no encontramos información para ese número de seguimiento."
+      );
+    }
+
+    const checkpoints = Array.isArray(tracking.checkpoints)
+      ? [...tracking.checkpoints]
+      : [];
+
+    checkpoints.sort((a, b) => {
+      const dateA = new Date(a.checkpoint_time || a.created_at || 0);
+      const dateB = new Date(b.checkpoint_time || b.created_at || 0);
+      return dateA - dateB;
+    });
+
+    const recentCheckpoints = checkpoints.slice(-6);
+    const latest = checkpoints[checkpoints.length - 1];
+
+    const status = statusNames[tracking.tag] || tracking.tag || "Consultando";
+    const carrierName =
+      tracking.slug ||
+      (carrier !== "auto" ? carrier : "Transportista detectada");
+
+    const message =
+      tracking.subtag_message ||
+      latest?.subtag_message ||
+      latest?.message ||
+      "El envío fue registrado. Estamos esperando nuevos movimientos.";
+
+    const location =
+      latest?.location ||
+      latest?.city ||
+      latest?.country_region_name ||
+      "";
+
+    const timelineHTML = recentCheckpoints.length
+      ? recentCheckpoints.map((checkpoint, index) => {
+          const isLast = index === recentCheckpoints.length - 1;
+
+          const text =
+            checkpoint.subtag_message ||
+            checkpoint.message ||
+            statusNames[checkpoint.tag] ||
+            "Actualización del envío";
+
+          const date = formatDate(
+            checkpoint.checkpoint_time || checkpoint.created_at
+          );
+
+          return `
+            <li class="${isLast ? "current" : "done"}">
+              ${safe(text)}
+              ${date ? `<br><small>${safe(date)}</small>` : ""}
+            </li>
+          `;
+        }).join("")
+      : `
+          <li class="current">
+            Información recibida
+            <span class="now">ahora</span>
+          </li>
+        `;
+
+    result.innerHTML = `
+      <span class="result-tag">Seguimiento en vivo</span>
+
+      <div class="result-top">
+        <span class="result-title">${safe(trackingNumber)}</span>
+        <span class="result-carrier">${safe(carrierName)}</span>
+      </div>
+
+      <span class="status-pill transito">
+        <i></i>${safe(status)}
+      </span>
+
+      <p class="result-msg">${safe(message)}</p>
+
+      <p class="result-meta">
+        ${location ? `${safe(location)} · ` : ""}
+        ${latest
+          ? `Último movimiento: ${safe(formatDate(latest.checkpoint_time || latest.created_at))}`
+          : "Esperando información de la transportista"}
+      </p>
+
+      <ul class="timeline">
+        ${timelineHTML}
+      </ul>
+    `;
+
+    result.classList.add('show');
+    result.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest'
+    });
+
+  } catch (error) {
+
+    result.innerHTML = `
+      <span class="result-tag">No pudimos encontrar el envío</span>
+
+      <div class="result-top">
+        <span class="result-title">${safe(trackingNumber)}</span>
+      </div>
+
+      <p class="result-msg">
+        ${safe(error.message)}
+      </p>
+
+      <p class="result-meta">
+        Revisá el número de seguimiento o probá seleccionando la transportista.
+      </p>
+    `;
+
+    result.classList.add('show');
+
+  } finally {
+    skeleton.classList.remove('show');
+    submitButton.disabled = false;
+    submitButton.textContent = "Rastrear envío";
+  }
+});
 </script>
 <script>
 const animatedElements = document.querySelectorAll(".scroll-animate");
