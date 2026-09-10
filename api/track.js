@@ -32,6 +32,7 @@ export default async function handler(req, res) {
       DHL: "dhl",
       FedEx: "fedex",
       UPS: "ups"
+      "Correo Uruguayo": "correo-uy"
     };
 
     if (carrier && carrier !== "auto" && carrierMap[carrier]) {
