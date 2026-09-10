@@ -29,11 +29,11 @@ module.exports = async function handler(req, res) {
     // Si el usuario eligió una empresa concreta,
     // enviamos el slug a AfterShip.
     const carrierMap = {
-      DHL: "dhl",
-      FedEx: "fedex",
-      UPS: "ups"
-      "Correo Uruguayo": "correo-uy"
-    };
+  DHL: "dhl",
+  FedEx: "fedex",
+  UPS: "ups",
+  "Correo Uruguayo": "correo-uy"
+};
 
     if (carrier && carrier !== "auto" && carrierMap[carrier]) {
       tracking.slug = carrierMap[carrier];
