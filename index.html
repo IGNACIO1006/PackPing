@@ -1297,7 +1297,37 @@ form.addEventListener('submit', async (e) => {
       const dateB = new Date(b.checkpoint_time || b.created_at || 0);
       return dateA - dateB;
     });
+const latest =
+  checkpoints.length > 0
+    ? checkpoints[checkpoints.length - 1]
+    : null;
 
+const status =
+  statusNames[tracking.tag] ||
+  tracking.tag ||
+  "Consultando";
+
+const carrierName =
+  tracking.slug ||
+  (carrier !== "auto"
+    ? carrier
+    : "Transportista detectada");
+
+const message =
+  tracking.subtag_message ||
+  latest?.subtag_message ||
+  latest?.message ||
+  "El envío fue registrado. Estamos esperando nuevos movimientos.";
+
+const location =
+  latest?.location ||
+  [
+    latest?.city,
+    latest?.state,
+    latest?.country_region_name
+  ]
+    .filter(Boolean)
+    .join(", ");
     const recentCheckpoints = checkpoints.slice(-8);
 
 const currentStage =
