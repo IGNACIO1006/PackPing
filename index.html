@@ -7,7 +7,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
-<style>
+  <style>
+   /* ANIMACIONES AL HACER SCROLL */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(35px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.scroll-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+html {
+  scroll-behavior: smooth;
+} 
   :root{
     --bg:#F8FAFC;
     --surface:#FFFFFF;
@@ -34,7 +49,8 @@
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{
+body
+{
     margin:0;
     background:var(--bg);
     color:var(--ink);
@@ -432,7 +448,7 @@
     </div>
   </section>
 
-  <section class="carriers">
+  <section class="carriers-section scroll-animate">
     <div class="wrap">
       <div class="section-head">
         <h2>Empresas de transporte compatibles con PackPing</h2>
@@ -494,8 +510,8 @@
     </div>
   </section>
 
-  <section class="panel-section" id="mis-envios">
-    <div class="wrap panel-grid">
+  <section class="panel-section scroll-animate" id="mis-envios">
+  <div class="wrap panel-grid">
       <div class="panel-copy">
         <h2>Guardá todos tus envíos en un solo panel</h2>
         <div class="feat">
@@ -540,7 +556,7 @@
     </div>
   </section>
 
-  <section class="reviews">
+  <section class="reviews scroll-animate">
     <div class="wrap">
       <div class="section-head">
         <h2>Lo que dicen quienes ya usan PackPing</h2>
@@ -568,7 +584,7 @@
     </div>
   </section>
 
-  <section class="faq" id="faq">
+  <section class="faq-section scroll-animate">
     <div class="wrap">
       <div class="section-head">
         <h2>Preguntas frecuentes sobre rastreo de paquetes</h2>
@@ -598,7 +614,7 @@
     </div>
   </section>
 
-  <section class="contact" id="contacto">
+  <section class="contact scroll-animate" id="contacto">
     <div class="wrap">
       <div class="contact-card">
         <div>
@@ -650,6 +666,27 @@
     }, 850);
   });
 </script>
+<script>
+const animatedElements = document.querySelectorAll(".scroll-animate");
 
+const scrollObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+    } else {
+      entry.target.classList.remove("visible");
+    }
+  });
+}, {
+  threshold: 0.12
+});
+
+animatedElements.forEach((element) => {
+  scrollObserver.observe(element);
+});
+</script>
+
+</body>
+</html>
 </body>
 </html>
