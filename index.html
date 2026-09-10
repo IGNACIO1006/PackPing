@@ -752,6 +752,24 @@ body
     padding:16px;
   }
 }  
+    /* Estado inicial / información recibida */
+
+.status-gray{
+  color:#64748B;
+  background:#F1F5F9;
+}
+
+.latest-movement.stage-gray{
+  border-left:4px solid #94A3B8;
+}
+
+.tracking-event.stage-gray{
+  color:#94A3B8;
+}
+
+.tracking-event.stage-gray .tracking-event-dot{
+  background:#94A3B8;
+}
 </style>
 </head>
 <body>
@@ -1081,6 +1099,118 @@ const statusNames = {
   Exception: "Requiere atención",
   Expired: "Sin actualizaciones"
 };
+  // ==============================
+// ETAPAS VISUALES DE PACKPING
+// ==============================
+
+function getTrackingStage(tracking, checkpoint = null) {
+  const tag = checkpoint?.tag || tracking?.tag || "";
+
+  // Entregado
+  if (tag === "Delivered") {
+    return "green";
+  }
+
+  // Solo se recibieron los datos
+  if (tag === "Pending" || tag === "InfoReceived") {
+    return "gray";
+  }
+
+  // Reparto final / disponible para retirar
+  if (tag === "OutForDelivery" || tag === "AvailableForPickup") {
+    return "blue";
+  }
+
+  const origin =
+    tracking?.origin_country_region ||
+    tracking?.tracking_origin_country_region ||
+    "";
+
+  const destination =
+    tracking?.destination_country_region ||
+    tracking?.courier_destination_country_region ||
+    tracking?.tracking_destination_country_region ||
+    "";
+
+  const checkpointCountry = checkpoint?.country_region || "";
+
+  // Si es internacional y ya apareció en el país destino -> azul
+  const isInternational =
+    origin &&
+    destination &&
+    origin !== destination;
+
+  if (
+    isInternational &&
+    checkpointCountry &&
+    checkpointCountry === destination
+  ) {
+    return "blue";
+  }
+
+  // Todo lo demás mientras viaja
+  return "yellow";
+}
+
+
+// ==============================
+// HORARIOS
+// ==============================
+
+// Mantiene la hora LOCAL que informó la transportista.
+// No deja que el navegador la convierta automáticamente.
+function formatCheckpointLocalTime(value) {
+  if (!value) return "";
+
+  const match = String(value).match(
+    /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/
+  );
+
+  if (!match) return value;
+
+  const months = [
+    "ene", "feb", "mar", "abr", "may", "jun",
+    "jul", "ago", "sep", "oct", "nov", "dic"
+  ];
+
+  const year = match[1];
+  const month = months[Number(match[2]) - 1];
+  const day = match[3];
+  const hour = match[4];
+  const minute = match[5];
+
+  return `${day} ${month} ${year} · ${hour}:${minute}`;
+}
+
+
+// Convierte a Uruguay SOLO si AfterShip recibió
+// una zona horaria/offset confiable.
+function formatUruguayTime(value) {
+  if (!value) return "";
+
+  const hasTimezone =
+    /(Z|[+-]\d{2}:?\d{2})$/.test(String(value));
+
+  if (!hasTimezone) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("es-UY", {
+    timeZone: "America/Montevideo",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(date);
+}
 
 function safe(value = "") {
   return String(value)
@@ -1168,81 +1298,366 @@ form.addEventListener('submit', async (e) => {
       return dateA - dateB;
     });
 
-    const recentCheckpoints = checkpoints.slice(-6);
-    const latest = checkpoints[checkpoints.length - 1];
+    const recentCheckpoints = checkpoints.slice(-8);
 
-    const status = statusNames[tracking.tag] || tracking.tag || "Consultando";
-    const carrierName =
-      tracking.slug ||
-      (carrier !== "auto" ? carrier : "Transportista detectada");
+const currentStage =
+  tracking.tag === "Delivered"
+    ? "green"
+    : getTrackingStage(tracking, latest);
 
-    const message =
-      tracking.subtag_message ||
-      latest?.subtag_message ||
-      latest?.message ||
-      "El envío fue registrado. Estamos esperando nuevos movimientos.";
+const originCode =
+  tracking.origin_country_region ||
+  tracking.tracking_origin_country_region ||
+  "";
 
-    const location =
-      latest?.location ||
-      latest?.city ||
-      latest?.country_region_name ||
-      "";
+const destinationCode =
+  tracking.destination_country_region ||
+  tracking.courier_destination_country_region ||
+  tracking.tracking_destination_country_region ||
+  "";
 
-    const timelineHTML = recentCheckpoints.length
-      ? recentCheckpoints.map((checkpoint, index) => {
-          const isLast = index === recentCheckpoints.length - 1;
+const originCheckpoint = originCode
+  ? checkpoints.find(
+      checkpoint => checkpoint.country_region === originCode
+    )
+  : null;
 
-          const text =
-            checkpoint.subtag_message ||
-            checkpoint.message ||
-            statusNames[checkpoint.tag] ||
-            "Actualización del envío";
+const destinationCheckpoint = destinationCode
+  ? [...checkpoints].reverse().find(
+      checkpoint => checkpoint.country_region === destinationCode
+    )
+  : null;
 
-          const date = formatDate(
-            checkpoint.checkpoint_time || checkpoint.created_at
-          );
+const originName =
+  originCheckpoint?.country_region_name ||
+  originCode ||
+  "";
 
-          return `
-            <li class="${isLast ? "current" : "done"}">
-              ${safe(text)}
-              ${date ? `<br><small>${safe(date)}</small>` : ""}
-            </li>
-          `;
-        }).join("")
-      : `
-          <li class="current">
-            Información recibida
-            <span class="now">ahora</span>
-          </li>
-        `;
+const destinationName =
+  destinationCheckpoint?.country_region_name ||
+  destinationCode ||
+  "";
 
-    result.innerHTML = `
-      <span class="result-tag">Seguimiento en vivo</span>
+const latestRawTime =
+  latest?.checkpoint_time ||
+  latest?.created_at ||
+  "";
 
-      <div class="result-top">
-        <span class="result-title">${safe(trackingNumber)}</span>
-        <span class="result-carrier">${safe(carrierName)}</span>
-      </div>
+const latestLocalTime =
+  formatCheckpointLocalTime(latestRawTime);
 
-      <span class="status-pill transito">
-        <i></i>${safe(status)}
-      </span>
+const latestUruguayTime =
+  formatUruguayTime(latestRawTime);
 
-      <p class="result-msg">${safe(message)}</p>
+const latestPlace =
+  latest?.city ||
+  latest?.country_region_name ||
+  "";
 
-      <p class="result-meta">
-        ${location ? `${safe(location)} · ` : ""}
-        ${latest
-          ? `Último movimiento: ${safe(formatDate(latest.checkpoint_time || latest.created_at))}`
-          : "Esperando información de la transportista"}
-      </p>
+const serviceName =
+  tracking.shipment_type ||
+  carrierName;
 
-      <ul class="timeline">
-        ${timelineHTML}
-      </ul>
+const timelineHTML = recentCheckpoints.length
+  ? recentCheckpoints.map(checkpoint => {
+
+      const stage =
+        getTrackingStage(tracking, checkpoint);
+
+      const text =
+        checkpoint.subtag_message ||
+        checkpoint.message ||
+        statusNames[checkpoint.tag] ||
+        "Actualización del envío";
+
+      const eventLocation =
+        checkpoint.location ||
+        [
+          checkpoint.city,
+          checkpoint.state,
+          checkpoint.country_region_name
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+      const rawTime =
+        checkpoint.checkpoint_time ||
+        checkpoint.created_at ||
+        "";
+
+      const localTime =
+        formatCheckpointLocalTime(rawTime);
+
+      const uruguayTime =
+        formatUruguayTime(rawTime);
+
+      const localPlace =
+        checkpoint.city ||
+        checkpoint.country_region_name ||
+        "";
+
+      return `
+        <li class="tracking-event stage-${stage}">
+
+          <span class="tracking-event-dot"></span>
+
+          <div class="tracking-event-title">
+            ${safe(text)}
+          </div>
+
+          ${
+            eventLocation
+              ? `
+                <div class="tracking-event-location">
+                  📍 ${safe(eventLocation)}
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            localTime
+              ? `
+                <div class="event-time">
+
+                  <span class="event-time-local">
+                    🕒 ${safe(localTime)}
+                    ${
+                      localPlace
+                        ? ` · hora local en ${safe(localPlace)}`
+                        : " · hora local"
+                    }
+                  </span>
+
+                  ${
+                    uruguayTime
+                      ? `
+                        <span class="event-time-uy">
+                          (${safe(uruguayTime)} · Uruguay)
+                        </span>
+                      `
+                      : ""
+                  }
+
+                </div>
+              `
+              : ""
+          }
+
+        </li>
+      `;
+    }).join("")
+  : `
+      <li class="tracking-event stage-gray">
+
+        <span class="tracking-event-dot"></span>
+
+        <div class="tracking-event-title">
+          Esperando el primer movimiento
+        </div>
+
+      </li>
     `;
 
-    result.classList.add('show');
+
+result.innerHTML = `
+
+  <div class="tracking-summary-card">
+
+    <div class="tracking-overline">
+
+      <span class="tracking-overline-text">
+        ${
+          tracking.tag === "Delivered"
+            ? "Seguimiento finalizado"
+            : "Seguimiento actualizado"
+        }
+      </span>
+
+    </div>
+
+
+    <div class="tracking-header-new">
+
+      <div>
+
+        <div class="tracking-carrier-new">
+          ${safe(serviceName)}
+        </div>
+
+        <div class="tracking-number-new">
+          ${safe(trackingNumber)}
+        </div>
+
+      </div>
+
+
+      <span class="tracking-status-new status-${currentStage}">
+        ${safe(status)}
+      </span>
+
+    </div>
+
+
+    <div class="latest-movement stage-${currentStage}">
+
+      <div class="latest-label">
+        Último movimiento
+      </div>
+
+      <div class="latest-title">
+        ${safe(message)}
+      </div>
+
+
+      ${
+        location
+          ? `
+            <div class="latest-location">
+              📍 ${safe(location)}
+            </div>
+          `
+          : ""
+      }
+
+
+      ${
+        latestLocalTime
+          ? `
+            <div class="event-time">
+
+              <span class="event-time-local">
+                🕒 ${safe(latestLocalTime)}
+                ${
+                  latestPlace
+                    ? ` · hora local en ${safe(latestPlace)}`
+                    : " · hora local"
+                }
+              </span>
+
+              ${
+                latestUruguayTime
+                  ? `
+                    <span class="event-time-uy">
+                      (${safe(latestUruguayTime)} · Uruguay)
+                    </span>
+                  `
+                  : ""
+              }
+
+            </div>
+          `
+          : ""
+      }
+
+    </div>
+
+
+    ${
+      originName || destinationName
+        ? `
+          <div class="tracking-route">
+
+            <span class="route-place">
+              ${safe(originName || "Origen")}
+            </span>
+
+            <span class="route-arrow">
+              →
+            </span>
+
+            <span class="route-place">
+              ${safe(destinationName || "Destino")}
+            </span>
+
+          </div>
+        `
+        : ""
+    }
+
+
+    <div class="tracking-history-title">
+      Recorrido del envío
+    </div>
+
+
+    <ul class="tracking-timeline-new">
+      ${timelineHTML}
+    </ul>
+
+  </div>
+
+
+  <div class="tracking-legend">
+
+    <div class="legend-title">
+      Qué significa cada color
+    </div>
+
+    <div class="legend-grid">
+
+      <div class="legend-item">
+
+        <span
+          class="legend-dot"
+          style="background:#94A3B8">
+        </span>
+
+        <div>
+          <strong>Información recibida</strong>
+          <span>
+            La transportista recibió los datos.
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="legend-item">
+
+        <span class="legend-dot yellow"></span>
+
+        <div>
+          <strong>En tránsito</strong>
+          <span>
+            Viaja hacia el país de destino.
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="legend-item">
+
+        <span class="legend-dot blue"></span>
+
+        <div>
+          <strong>En destino</strong>
+          <span>
+            Llegó al país destino, aduana o reparto.
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="legend-item">
+
+        <span class="legend-dot green"></span>
+
+        <div>
+          <strong>Entregado</strong>
+          <span>
+            La transportista confirmó la entrega.
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+`;
     result.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest'
