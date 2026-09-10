@@ -363,6 +363,395 @@ body
   .footer-tag{font-size:13.5px;color:var(--ink-faint);}
   .footer-links{display:flex;gap:18px;font-size:13.5px;}
   .footer-links a{color:var(--ink-soft);}
+  /* =========================================================
+   PACKPING - NUEVO RESULTADO DE SEGUIMIENTO
+   Amarillo: transito internacional
+   Azul: pais de destino
+   Verde: entregado
+   ========================================================= */
+
+:root{
+  --stage-yellow:#D97706;
+  --stage-yellow-bg:#FFF7D6;
+  --stage-yellow-border:#F6D365;
+
+  --stage-blue:#2563EB;
+  --stage-blue-bg:#EAF2FF;
+  --stage-blue-border:#B7D0FF;
+
+  --stage-green:#16803A;
+  --stage-green-bg:#ECFDF3;
+  --stage-green-border:#A7E8BC;
+}
+
+/* CABECERA DEL RESULTADO */
+
+.tracking-summary-card{
+  background:#FFFFFF;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 8px 25px rgba(15,32,64,.06);
+}
+
+.tracking-overline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.tracking-overline-text{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+}
+
+.tracking-header-new{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:18px;
+  margin-bottom:18px;
+}
+
+.tracking-carrier-new{
+  font-family:'Sora',sans-serif;
+  font-size:17px;
+  font-weight:700;
+  color:var(--ink);
+}
+
+.tracking-number-new{
+  margin-top:4px;
+  color:var(--ink-faint);
+  font-size:13px;
+  word-break:break-all;
+}
+
+/* ESTADO PRINCIPAL */
+
+.tracking-status-new{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.tracking-status-new::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:currentColor;
+}
+
+.status-yellow{
+  color:var(--stage-yellow);
+  background:var(--stage-yellow-bg);
+}
+
+.status-blue{
+  color:var(--stage-blue);
+  background:var(--stage-blue-bg);
+}
+
+.status-green{
+  color:var(--stage-green);
+  background:var(--stage-green-bg);
+}
+
+/* ULTIMO MOVIMIENTO */
+
+.latest-movement{
+  padding:17px;
+  border-radius:14px;
+  margin:16px 0;
+  border:1px solid var(--border);
+  background:var(--bg);
+}
+
+.latest-movement.stage-yellow{
+  border-left:4px solid var(--stage-yellow);
+}
+
+.latest-movement.stage-blue{
+  border-left:4px solid var(--stage-blue);
+}
+
+.latest-movement.stage-green{
+  border-left:4px solid var(--stage-green);
+}
+
+.latest-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  margin-bottom:5px;
+}
+
+.latest-title{
+  font-family:'Sora',sans-serif;
+  font-size:17px;
+  font-weight:700;
+  color:var(--ink);
+}
+
+.latest-location{
+  margin-top:7px;
+  font-size:13.5px;
+  color:var(--ink-soft);
+}
+
+/* HORARIOS */
+
+.event-time{
+  margin-top:8px;
+}
+
+.event-time-local{
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  color:var(--ink);
+}
+
+.event-time-uy{
+  display:block;
+  margin-top:2px;
+  font-size:12px;
+  color:var(--ink-faint);
+}
+
+/* ORIGEN -> DESTINO */
+
+.tracking-route{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:18px 0 22px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#FBFCFE;
+  font-size:12.5px;
+}
+
+.route-place{
+  font-weight:600;
+  color:var(--ink);
+}
+
+.route-arrow{
+  color:var(--ink-faint);
+  font-size:16px;
+}
+
+/* TIMELINE */
+
+.tracking-history-title{
+  font-family:'Sora',sans-serif;
+  font-size:15px;
+  font-weight:700;
+  margin:22px 0 18px;
+}
+
+.tracking-timeline-new{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.tracking-event{
+  position:relative;
+  padding:0 0 25px 35px;
+}
+
+.tracking-event:last-child{
+  padding-bottom:4px;
+}
+
+.tracking-event::after{
+  content:"";
+  position:absolute;
+  left:10px;
+  top:18px;
+  bottom:-2px;
+  width:2px;
+  background:#E2E8F0;
+}
+
+.tracking-event:last-child::after{
+  display:none;
+}
+
+.tracking-event-dot{
+  position:absolute;
+  left:3px;
+  top:3px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  border:3px solid #fff;
+  box-shadow:0 0 0 2px currentColor;
+}
+
+.tracking-event.stage-yellow{
+  color:var(--stage-yellow);
+}
+
+.tracking-event.stage-blue{
+  color:var(--stage-blue);
+}
+
+.tracking-event.stage-green{
+  color:var(--stage-green);
+}
+
+.tracking-event.stage-yellow .tracking-event-dot{
+  background:var(--stage-yellow);
+}
+
+.tracking-event.stage-blue .tracking-event-dot{
+  background:var(--stage-blue);
+}
+
+.tracking-event.stage-green .tracking-event-dot{
+  background:var(--stage-green);
+}
+
+.tracking-event-title{
+  font-size:13.5px;
+  font-weight:650;
+  color:var(--ink);
+  line-height:1.4;
+}
+
+.tracking-event-location{
+  margin-top:3px;
+  font-size:12px;
+  color:var(--ink-soft);
+}
+
+/* LEYENDA */
+
+.tracking-legend{
+  background:#FFFFFF;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:17px;
+  box-shadow:0 8px 25px rgba(15,32,64,.08);
+}
+
+.legend-title{
+  font-family:'Sora',sans-serif;
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:13px;
+}
+
+.legend-grid{
+  display:flex;
+  flex-direction:column;
+  gap:13px;
+}
+
+.legend-item{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.legend-dot{
+  flex:0 0 auto;
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  margin-top:4px;
+}
+
+.legend-dot.yellow{
+  background:var(--stage-yellow);
+}
+
+.legend-dot.blue{
+  background:var(--stage-blue);
+}
+
+.legend-dot.green{
+  background:var(--stage-green);
+}
+
+.legend-item strong{
+  display:block;
+  font-size:12px;
+  color:var(--ink);
+}
+
+.legend-item span{
+  display:block;
+  font-size:11px;
+  line-height:1.4;
+  color:var(--ink-faint);
+  margin-top:2px;
+}
+
+/* EN PANTALLAS GRANDES: LEYENDA AL COSTADO DERECHO */
+
+@media (min-width:1500px){
+  #resultCard .tracking-legend{
+    position:fixed;
+    width:235px;
+    right:28px;
+    top:145px;
+    z-index:20;
+  }
+}
+
+/* NOTEBOOK / TABLET: LEYENDA ABAJO */
+
+@media (max-width:1499px){
+  .tracking-legend{
+    margin-top:18px;
+  }
+
+  .legend-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+  }
+}
+
+/* CELULAR */
+
+@media (max-width:640px){
+
+  .tracking-header-new{
+    flex-direction:column;
+  }
+
+  .tracking-status-new{
+    align-self:flex-start;
+  }
+
+  .legend-grid{
+    grid-template-columns:1fr;
+  }
+
+  .tracking-summary-card{
+    padding:16px;
+  }
+}  
 </style>
 </head>
 <body>
