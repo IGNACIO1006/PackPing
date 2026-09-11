@@ -796,6 +796,158 @@ body
 .tracking-event.stage-gray .tracking-event-dot{
   background:#94A3B8;
 }
+    /* LOGIN PACKPING */
+
+.login-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.login-modal.open{
+  display:flex;
+}
+
+.login-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(15, 32, 64, .45);
+  backdrop-filter:blur(5px);
+}
+
+.login-box{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:410px;
+  background:#fff;
+  border-radius:22px;
+  padding:30px;
+  box-shadow:0 25px 70px rgba(15,32,64,.22);
+}
+
+.login-box h2{
+  font-family:'Sora',sans-serif;
+  font-size:23px;
+  margin-bottom:8px;
+}
+
+.login-subtitle{
+  color:var(--ink-soft);
+  font-size:14px;
+  margin-bottom:22px;
+  line-height:1.5;
+}
+
+.login-close{
+  position:absolute;
+  right:16px;
+  top:12px;
+  border:none;
+  background:transparent;
+  font-size:28px;
+  cursor:pointer;
+  color:var(--ink-faint);
+}
+
+.google-login-btn{
+  width:100%;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink);
+  cursor:pointer;
+}
+
+.google-login-btn:hover{
+  background:#F8FAFC;
+  border-color:#CBD5E1;
+}
+
+.login-divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:20px 0;
+  color:var(--ink-faint);
+  font-size:12px;
+}
+
+.login-divider::before,
+.login-divider::after{
+  content:"";
+  height:1px;
+  background:var(--border);
+  flex:1;
+}
+
+#emailLoginForm label{
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  margin:12px 0 6px;
+}
+
+#emailLoginForm input{
+  width:100%;
+  padding:12px 13px;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  font:inherit;
+  outline:none;
+}
+
+#emailLoginForm input:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--primary-tint);
+}
+
+.email-login-btn{
+  width:100%;
+  margin-top:18px;
+  padding:13px;
+  border:0;
+  border-radius:10px;
+  background:var(--primary);
+  color:#fff;
+  font-family:inherit;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.login-register{
+  text-align:center;
+  margin-top:18px;
+  font-size:13px;
+  color:var(--ink-soft);
+}
+
+.login-register button{
+  border:0;
+  background:none;
+  color:var(--primary);
+  font-weight:600;
+  cursor:pointer;
+}
+
+.login-message{
+  margin-top:12px;
+  text-align:center;
+  font-size:13px;
+  color:var(--ink-soft);
+}
 </style>
 </head>
 <body>
@@ -810,7 +962,7 @@ body
       <span class="dot">·</span>
       <a href="#mis-envios">Mis envíos</a>
       <span class="dot">·</span>
-      <a class="nav-cta" href="#">Iniciar sesión</a>
+      <a class="nav-cta" href="#" id="loginBtn">Iniciar sesión</a>
     </nav>
   </div>
 </header>
@@ -1710,8 +1862,191 @@ animatedElements.forEach((element) => {
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
   );
+  const loginBtn = document.getElementById("loginBtn");
+const loginModal = document.getElementById("loginModal");
+const loginClose = document.getElementById("loginClose");
+const loginOverlay = document.getElementById("loginOverlay");
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+const emailLoginForm = document.getElementById("emailLoginForm");
+const registerBtn = document.getElementById("registerBtn");
+const loginMessage = document.getElementById("loginMessage");
+
+function openLogin() {
+  loginModal.classList.add("open");
+}
+
+function closeLogin() {
+  loginModal.classList.remove("open");
+}
+
+loginBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  openLogin();
+});
+
+loginClose.addEventListener("click", closeLogin);
+loginOverlay.addEventListener("click", closeLogin);
+
+
+// LOGIN CON GOOGLE
+googleLoginBtn.addEventListener("click", async () => {
+
+  loginMessage.textContent = "Conectando con Google...";
+
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+
+  if (error) {
+    loginMessage.textContent = error.message;
+  }
+});
+
+
+// LOGIN CON EMAIL
+emailLoginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  loginMessage.textContent = "Iniciando sesión...";
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    loginMessage.textContent = error.message;
+    return;
+  }
+
+  loginMessage.textContent = "Sesión iniciada ✓";
+
+  setTimeout(() => {
+    closeLogin();
+    updateUserInterface();
+  }, 600);
+});
+
+
+// CREAR CUENTA
+registerBtn.addEventListener("click", async () => {
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  if (!email || !password) {
+    loginMessage.textContent =
+      "Ingresá un email y una contraseña para crear tu cuenta.";
+    return;
+  }
+
+  loginMessage.textContent = "Creando cuenta...";
+
+  const { error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: window.location.origin
+    }
+  });
+
+  if (error) {
+    loginMessage.textContent = error.message;
+    return;
+  }
+
+  loginMessage.textContent =
+    "Cuenta creada. Revisá tu email para confirmarla.";
+});
+
+
+// MOSTRAR USUARIO LOGUEADO
+async function updateUserInterface() {
+
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    loginBtn.textContent = "Iniciar sesión";
+    return;
+  }
+
+  const name =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "Mi cuenta";
+
+  loginBtn.textContent = `👤 ${name}`;
+}
+
+updateUserInterface();
 </script>
-  
+<!-- MODAL LOGIN PACKPING -->
+<div class="login-modal" id="loginModal">
+  <div class="login-overlay" id="loginOverlay"></div>
+
+  <div class="login-box">
+    <button class="login-close" id="loginClose" type="button">×</button>
+
+    <h2>Iniciar sesión en PackPing</h2>
+    <p class="login-subtitle">
+      Guardá tus envíos y recibí avisos cuando cambien de estado.
+    </p>
+
+    <button class="google-login-btn" id="googleLoginBtn" type="button">
+      <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 3l5.7-5.7C33.9 5.9 29.2 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C33.9 5.9 29.2 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.1 0 9.7-2 13.2-5.2l-6.1-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.1 5.2C36.8 39.2 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"/>
+      </svg>
+
+      Continuar con Google
+    </button>
+
+    <div class="login-divider">
+      <span>o</span>
+    </div>
+
+    <form id="emailLoginForm">
+      <label for="loginEmail">Email</label>
+      <input
+        type="email"
+        id="loginEmail"
+        placeholder="tu@email.com"
+        required
+      >
+
+      <label for="loginPassword">Contraseña</label>
+      <input
+        type="password"
+        id="loginPassword"
+        placeholder="Tu contraseña"
+        required
+        minlength="6"
+      >
+
+      <button class="email-login-btn" type="submit">
+        Iniciar sesión
+      </button>
+    </form>
+
+    <p class="login-register">
+      ¿No tenés cuenta?
+      <button type="button" id="registerBtn">Crear cuenta</button>
+    </p>
+
+    <p class="login-message" id="loginMessage"></p>
+  </div>
+</div>  
 </body>
 </html>
 </body>
