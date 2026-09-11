@@ -1701,7 +1701,17 @@ animatedElements.forEach((element) => {
   scrollObserver.observe(element);
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://qclieaasdqkuxwsudnli.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yKHBS5u5klkA2_L00QkAsg_ceMYHnD-";
 
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+</script>
+  
 </body>
 </html>
 </body>
