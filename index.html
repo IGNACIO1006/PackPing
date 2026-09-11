@@ -257,9 +257,35 @@ body
   .states-row{display:grid;grid-template-columns:1fr;gap:18px;}
   @media (min-width:900px){.states-row{grid-template-columns:repeat(5,1fr);}}
   .state-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 18px;}
-  .state-dot{width:11px;height:11px;border-radius:50%;background:var(--ink-faint);display:block;margin-bottom:14px;}
-  .state-card[data-tone="done"] .state-dot{background:var(--success);}
-  .state-card[data-tone="active"] .state-dot{background:var(--primary);box-shadow:0 0 0 4px var(--primary-tint);}
+  .state-dot{
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  background:#94A3B8;
+  display:block;
+  margin-bottom:14px;
+}
+
+/* Gris - información recibida */
+.state-card[data-tone=""] .state-dot{
+  background:#94A3B8;
+}
+
+/* Amarillo - en tránsito */
+.state-card[data-tone="transit"] .state-dot{
+  background:#D97706;
+}
+
+/* Azul - en país de destino */
+.state-card[data-tone="active"] .state-dot{
+  background:#2563EB;
+  box-shadow:0 0 0 4px #EAF2FF;
+}
+
+/* Verde - entregado */
+.state-card[data-tone="done"] .state-dot{
+  background:#16803A;
+}
   .state-card h3{font-size:15px;margin-bottom:6px;}
   .state-card p{font-size:13.5px;color:var(--ink-soft);}
   .states-arrow{display:none;}
@@ -898,43 +924,43 @@ body
   <section class="states" id="estados">
     <div class="wrap">
       <div class="section-head">
-        <h2>Qué significa cada estado de tu envío</h2>
-        <p>Usamos siempre el mismo lenguaje simple, sin inventar ubicaciones ni fechas que la transportista no confirmó.</p>
+        <h2>Qué significa cada color en tu envío</h2>
+        <p>Los colores te ayudan a entender rápidamente en qué etapa está tu envío, desde que la transportista recibe los datos hasta la entrega final.</p>
       </div>
 
       <div class="states-row">
         <div class="state-card" data-tone="done">
           <span class="state-dot"></span>
           <h3>Información recibida</h3>
-          <p>Se registraron los datos del envío, aunque todavía no lo retiraron físicamente.</p>
+<p>La transportista recibió los datos del envío, pero todavía no confirmó que haya comenzado el recorrido.</p>
         </div>
         <div class="state-card" data-tone="done">
           <span class="state-dot"></span>
           <h3>En tránsito</h3>
-          <p>El paquete se está moviendo entre depósitos, ciudades o países.</p>
+<p>El paquete salió del origen y está viajando hacia el país o zona de destino.</p>
         </div>
         <div class="state-card" data-tone="active">
           <span class="state-dot"></span>
-          <h3>En reparto</h3>
-          <p>Salió hacia la entrega final. Es el paso previo a "Entregado".</p>
+          <h3>En país de destino</h3>
+<p>El envío llegó al país de destino. Puede estar en aduana, distribución local o en camino para la entrega final.</p>
         </div>
         <div class="state-card" data-tone="">
           <span class="state-dot"></span>
           <h3>Disponible para retirar</h3>
-          <p>Llegó a un punto de entrega o sucursal y está esperando que lo retires.</p>
+<p>El paquete llegó a una sucursal o punto de entrega y ya está esperando que lo retires.</p>
         </div>
         <div class="state-card" data-tone="">
           <span class="state-dot"></span>
           <h3>Entregado</h3>
-          <p>La transportista registró la entrega del paquete.</p>
+<p>La transportista confirmó que el paquete fue entregado al destinatario.</p>
         </div>
       </div>
 
       <div class="state-alert">
         <span class="state-dot"></span>
         <div>
-          <h3>Requiere atención</h3>
-          <p>Hubo un problema o una demora que necesita que hagas algo: confirmar un dato, coordinar la entrega o revisar un mensaje de la transportista. Te lo explicamos en lenguaje simple, con el texto original siempre disponible.</p>
+         <strong>Requiere atención</strong>
+<p>Hay una demora, incidencia o acción necesaria. PackPing te mostrará el mensaje informado por la transportista para que sepas qué hacer.</p>
         </div>
       </div>
     </div>
@@ -946,7 +972,9 @@ body
         <h2>Guardá todos tus envíos en un solo panel</h2>
         <div class="feat">
           <h3>Historial completo de tus paquetes</h3>
-          <p>Ponele un nombre a cada envío y encontralo sin memorizar números largos. Filtrá por Activos, Entregados o Requieren atención.</p>
+          <p>Ponele un nombre a cada envío y encontralo sin memorizar números largos. Filtrá por Activos, Entregados o Requieren atención.
+          
+          </p>
         </div>
         <div class="feat">
           <h3>Avisos cuando hay novedades</h3>
