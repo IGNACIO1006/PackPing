@@ -267,23 +267,23 @@ body
 }
 
 /* Gris - información recibida */
-.state-card[data-tone=""] .state-dot{
+.state-card[data-tone="waiting"] .state-dot{
   background:#94A3B8;
 }
 
-/* Amarillo - en tránsito */
+/* Amarillo/ámbar - tránsito */
 .state-card[data-tone="transit"] .state-dot{
   background:#D97706;
 }
 
-/* Azul - en país de destino */
-.state-card[data-tone="active"] .state-dot{
+/* Azul - país de destino */
+.state-card[data-tone="destination"] .state-dot{
   background:#2563EB;
   box-shadow:0 0 0 4px #EAF2FF;
 }
 
 /* Verde - entregado */
-.state-card[data-tone="done"] .state-dot{
+.state-card[data-tone="delivered"] .state-dot{
   background:#16803A;
 }
   .state-card h3{font-size:15px;margin-bottom:6px;}
@@ -928,30 +928,31 @@ body
         <p>Los colores te ayudan a entender rápidamente en qué etapa está tu envío, desde que la transportista recibe los datos hasta la entrega final.</p>
       </div>
 
+    
       <div class="states-row">
-        <div class="state-card" data-tone="done">
-          <span class="state-dot"></span>
-          <h3>Información recibida</h3>
+        <div class="state-card" data-tone="waiting">
+  <span class="state-dot"></span>
+  <h3>Información recibida</h3>
 <p>La transportista recibió los datos del envío, pero todavía no confirmó que haya comenzado el recorrido.</p>
         </div>
-        <div class="state-card" data-tone="done">
-          <span class="state-dot"></span>
-          <h3>En tránsito</h3>
+        <div class="state-card" data-tone="transit">
+  <span class="state-dot"></span>
+  <h3>En tránsito</h3>
 <p>El paquete salió del origen y está viajando hacia el país o zona de destino.</p>
         </div>
-        <div class="state-card" data-tone="active">
-          <span class="state-dot"></span>
-          <h3>En país de destino</h3>
+       <div class="state-card" data-tone="destination">
+  <span class="state-dot"></span>
+  <h3>En país de destino</h3>
 <p>El envío llegó al país de destino. Puede estar en aduana, distribución local o en camino para la entrega final.</p>
         </div>
-        <div class="state-card" data-tone="">
-          <span class="state-dot"></span>
-          <h3>Disponible para retirar</h3>
+        <div class="state-card" data-tone="destination">
+  <span class="state-dot"></span>
+  <h3>Disponible para retirar</h3>
 <p>El paquete llegó a una sucursal o punto de entrega y ya está esperando que lo retires.</p>
         </div>
-        <div class="state-card" data-tone="">
-          <span class="state-dot"></span>
-          <h3>Entregado</h3>
+        <div class="state-card" data-tone="delivered">
+  <span class="state-dot"></span>
+  <h3>Entregado</h3>
 <p>La transportista confirmó que el paquete fue entregado al destinatario.</p>
         </div>
       </div>
