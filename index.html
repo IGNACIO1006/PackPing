@@ -1854,7 +1854,107 @@ result.innerHTML = `
   </div>
 
 `;
-  
+  // ==============================
+// CAMPANA DE AVISOS
+// ==============================
+const notifyBtn = document.getElementById("notifyBtn");
+
+if (notifyBtn) {
+
+  const {
+    data: { user: currentUser }
+  } = await supabaseClient.auth.getUser();
+
+  // Si ya está siguiendo este envío, mostramos la campana activa
+  if (currentUser) {
+    const { data: followedShipment } = await supabaseClient
+      .from("followed_shipments")
+      .select("notifications_enabled")
+      .eq("user_id", currentUser.id)
+      .eq("tracking_number", trackingNumber)
+      .maybeSingle();
+
+    if (followedShipment?.notifications_enabled) {
+      notifyBtn.classList.add("active");
+      notifyBtn.title = "Avisos activados";
+      notifyBtn.setAttribute("aria-label", "Desactivar avisos");
+    }
+  }
+
+  notifyBtn.addEventListener("click", async () => {
+
+    const {
+      data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    // Si no inició sesión, abrimos el login
+    if (!user) {
+      loginMessage.textContent =
+        "Iniciá sesión para recibir avisos de este envío.";
+      openLogin();
+      return;
+    }
+
+    const isActive = notifyBtn.classList.contains("active");
+
+    // DESACTIVAR
+    if (isActive) {
+      const { error } = await supabaseClient
+        .from("followed_shipments")
+        .update({
+          notifications_enabled: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq("user_id", user.id)
+        .eq("tracking_number", trackingNumber);
+
+      if (error) {
+        console.error(error);
+        alert("No pudimos desactivar los avisos.");
+        return;
+      }
+
+      notifyBtn.classList.remove("active");
+      notifyBtn.title = "Activar avisos";
+      notifyBtn.setAttribute("aria-label", "Activar avisos");
+
+      alert("Avisos desactivados para este envío.");
+      return;
+    }
+
+    // ACTIVAR / GUARDAR
+    const { error } = await supabaseClient
+      .from("followed_shipments")
+      .upsert(
+        {
+          user_id: user.id,
+          tracking_number: trackingNumber,
+          carrier: carrierName,
+          current_status: status,
+          last_checkpoint: message,
+          notifications_enabled: true,
+          updated_at: new Date().toISOString()
+        },
+        {
+          onConflict: "user_id,tracking_number"
+        }
+      );
+
+    if (error) {
+      console.error(error);
+      alert("No pudimos activar los avisos.");
+      return;
+    }
+
+    notifyBtn.classList.add("active");
+    notifyBtn.title = "Avisos activados";
+    notifyBtn.setAttribute("aria-label", "Desactivar avisos");
+
+    alert(
+      `🔔 Avisos activados\n\nEstado actual: ${status}\n\nTe avisaremos cuando este envío tenga una nueva actualización.`
+    );
+  });
+}
     result.classList.add('show');
     
     result.scrollIntoView({
