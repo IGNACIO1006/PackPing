@@ -1,5 +1,4 @@
 module.exports = async function handler(req, res) {
-  // Comprobación rápida desde navegador
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
@@ -9,7 +8,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method !== "POST") {
     return res.status(405).json({
-      error: "Método no permitido"
+      error: "Metodo no permitido"
     });
   }
 
@@ -24,21 +23,40 @@ module.exports = async function handler(req, res) {
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseSecret = process.env.SUPABASE_SECRET_KEY;
+  const resendKey = process.env.RESEND_API_KEY;
 
-  if (!supabaseUrl || !supabaseSecret) {
-    console.error("Faltan variables de Supabase");
+  if (!supabaseUrl || !supabaseSecret || !resendKey) {
+    console.error("Faltan variables de entorno");
 
     return res.status(500).json({
-      error: "Supabase no configurado"
+      error: "Configuracion incompleta"
     });
   }
+
+  function escapeHtml(value = "") {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  const statusNames = {
+    Pending: "Pendiente",
+    InfoReceived: "Informacion recibida",
+    InTransit: "En transito",
+    OutForDelivery: "En reparto",
+    AttemptFail: "Intento de entrega fallido",
+    Delivered: "Entregado",
+    AvailableForPickup: "Disponible para retirar",
+    Exception: "Requiere atencion",
+    Expired: "Sin actualizaciones"
+  };
 
   try {
     const event = req.body || {};
     const msg = event.msg || {};
-
-    // AfterShip puede enviar los datos directamente en msg
-    // o dentro de msg.tracking según el tipo/version del evento.
     const tracking = msg.tracking || msg;
 
     const trackingNumber =
@@ -54,7 +72,7 @@ module.exports = async function handler(req, res) {
     const carrier =
       tracking.slug ||
       msg.slug ||
-      "";
+      "Transportista";
 
     const checkpoints =
       tracking.checkpoints ||
@@ -62,7 +80,7 @@ module.exports = async function handler(req, res) {
       [];
 
     const latestCheckpoint =
-      checkpoints.length > 0
+      checkpoints.length
         ? checkpoints[checkpoints.length - 1]
         : null;
 
@@ -71,7 +89,17 @@ module.exports = async function handler(req, res) {
       latestCheckpoint?.message ||
       tracking.subtag_message ||
       status ||
-      "";
+      "Nueva actualizacion";
+
+    const location =
+      latestCheckpoint?.location ||
+      [
+        latestCheckpoint?.city,
+        latestCheckpoint?.state,
+        latestCheckpoint?.country_region_name
+      ]
+        .filter(Boolean)
+        .join(", ");
 
     console.log("AfterShip webhook recibido:", {
       event: event.event,
@@ -81,69 +109,255 @@ module.exports = async function handler(req, res) {
       carrier
     });
 
-    // Un test de AfterShip podría no traer un tracking real.
     if (!trackingNumber) {
-      console.log("Webhook sin tracking_number");
-
       return res.status(200).json({
         received: true,
         followers: 0
       });
     }
 
-    // Buscar usuarios que estén siguiendo ese tracking
-    const queryUrl =
+    // Buscar quienes tienen activada la campana
+    const followersUrl =
       `${supabaseUrl}/rest/v1/followed_shipments` +
       `?tracking_number=eq.${encodeURIComponent(trackingNumber)}` +
       `&notifications_enabled=eq.true` +
-      `&select=id,user_id,tracking_number,carrier,current_status,last_checkpoint`;
+      `&select=id,user_id,tracking_number,carrier,current_status,last_checkpoint,last_event_id`;
 
-    const followersResponse = await fetch(queryUrl, {
+    const followersResponse = await fetch(followersUrl, {
       headers: {
-        apikey: supabaseSecret
+        apikey: supabaseSecret,
+        Authorization: `Bearer ${supabaseSecret}`
       }
     });
 
     if (!followersResponse.ok) {
-      const text = await followersResponse.text();
-
-      console.error("Error consultando Supabase:", text);
+      console.error(
+        "Error consultando seguidores:",
+        await followersResponse.text()
+      );
 
       return res.status(500).json({
-        error: "No pudimos consultar los seguidores"
+        error: "Error consultando seguidores"
       });
     }
 
     const followers = await followersResponse.json();
 
     console.log(
-      `PackPing encontró ${followers.length} usuario(s) siguiendo ${trackingNumber}`
+      `PackPing encontro ${followers.length} usuario(s) siguiendo ${trackingNumber}`
     );
 
-    // Actualizamos el estado guardado
-    if (followers.length > 0) {
-      const updateUrl =
-        `${supabaseUrl}/rest/v1/followed_shipments` +
-        `?tracking_number=eq.${encodeURIComponent(trackingNumber)}` +
-        `&notifications_enabled=eq.true`;
+    let emailsSent = 0;
 
-      const updateResponse = await fetch(updateUrl, {
-        method: "PATCH",
-        headers: {
-          apikey: supabaseSecret,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal"
-        },
-        body: JSON.stringify({
-          current_status: status || null,
-          last_checkpoint: latestMessage || null,
-          updated_at: new Date().toISOString()
-        })
+    for (const follower of followers) {
+      // AfterShip reintento el mismo evento
+      if (
+        event.event_id &&
+        follower.last_event_id === event.event_id
+      ) {
+        console.log("Evento duplicado ignorado:", event.event_id);
+        continue;
+      }
+
+      const statusChanged =
+        status &&
+        follower.current_status !== status;
+
+      const checkpointChanged =
+        latestMessage &&
+        follower.last_checkpoint !== latestMessage;
+
+      if (!statusChanged && !checkpointChanged) {
+        continue;
+      }
+
+      // Obtener email del usuario desde Supabase Auth
+      const userResponse = await fetch(
+        `${supabaseUrl}/auth/v1/admin/users/${encodeURIComponent(
+          follower.user_id
+        )}`,
+        {
+          headers: {
+            apikey: supabaseSecret,
+            Authorization: `Bearer ${supabaseSecret}`
+          }
+        }
+      );
+
+      if (!userResponse.ok) {
+        console.error(
+          "No se pudo obtener el usuario:",
+          await userResponse.text()
+        );
+        continue;
+      }
+
+      const userData = await userResponse.json();
+      const user = userData.user || userData;
+      const email = user.email;
+
+      if (!email) {
+        console.log("Usuario sin email:", follower.user_id);
+        continue;
+      }
+
+      const friendlyStatus =
+        statusNames[status] ||
+        status ||
+        "Nueva actualizacion";
+
+      let subject = `Actualizacion de tu envio: ${friendlyStatus}`;
+
+      if (status === "OutForDelivery") {
+        subject = "Tu paquete esta en reparto";
+      }
+
+      if (status === "Delivered") {
+        subject = "Tu paquete fue entregado";
+      }
+
+      if (status === "Exception") {
+        subject = "Tu envio requiere atencion";
+      }
+
+      const emailResponse = await fetch(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            "Content-Type": "application/json",
+            "Idempotency-Key":
+              `packping-${event.event_id || Date.now()}-${follower.user_id}`
+          },
+          body: JSON.stringify({
+            from: "PackPing <onboarding@resend.dev>",
+            to: [email],
+            subject,
+            html: `
+              <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0f2040;">
+                
+                <h2 style="color:#2F66E8;">
+                  PackPing
+                </h2>
+
+                <p style="font-size:16px;">
+                  Tu envio tiene una nueva actualizacion.
+                </p>
+
+                <div style="
+                  background:#f7f9fc;
+                  border:1px solid #e2e8f0;
+                  border-radius:14px;
+                  padding:20px;
+                  margin:20px 0;
+                ">
+                  <p style="margin:0 0 8px;">
+                    <strong>${escapeHtml(carrier)}</strong>
+                  </p>
+
+                  <p style="margin:0 0 12px;color:#64748b;">
+                    ${escapeHtml(trackingNumber)}
+                  </p>
+
+                  <p style="font-size:18px;margin:0 0 10px;">
+                    <strong>${escapeHtml(friendlyStatus)}</strong>
+                  </p>
+
+                  <p style="margin:0;">
+                    ${escapeHtml(latestMessage)}
+                  </p>
+
+                  ${
+                    location
+                      ? `
+                        <p style="margin:10px 0 0;color:#64748b;">
+                          ${escapeHtml(location)}
+                        </p>
+                      `
+                      : ""
+                  }
+                </div>
+
+                <a
+                  href="https://pack-ping.vercel.app"
+                  style="
+                    display:inline-block;
+                    background:#2F66E8;
+                    color:white;
+                    text-decoration:none;
+                    padding:12px 20px;
+                    border-radius:9px;
+                    font-weight:bold;
+                  "
+                >
+                  Ver en PackPing
+                </a>
+
+                <p style="
+                  margin-top:24px;
+                  color:#94a3b8;
+                  font-size:12px;
+                ">
+                  Recibis este correo porque activaste la campana
+                  para este envio en PackPing.
+                </p>
+
+              </div>
+            `
+          })
+        }
+      );
+
+      if (!emailResponse.ok) {
+        console.error(
+          "Resend no pudo enviar el correo:",
+          await emailResponse.text()
+        );
+        continue;
+      }
+
+      const emailData = await emailResponse.json();
+
+      console.log("Email enviado:", {
+        trackingNumber,
+        email_id: emailData.id
       });
+
+      emailsSent += 1;
+
+      // Guardar el ultimo evento procesado
+      const updateResponse = await fetch(
+        `${supabaseUrl}/rest/v1/followed_shipments?id=eq.${encodeURIComponent(
+          follower.id
+        )}`,
+        {
+          method: "PATCH",
+          headers: {
+            apikey: supabaseSecret,
+            Authorization: `Bearer ${supabaseSecret}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal"
+          },
+          body: JSON.stringify({
+            current_status: status || null,
+            last_checkpoint: latestMessage || null,
+            last_event_id: event.event_id || null,
+
+            // Despues de Delivered ya no hacen falta mas avisos
+            notifications_enabled:
+              status === "Delivered"
+                ? false
+                : true,
+
+            updated_at: new Date().toISOString()
+          })
+        }
+      );
 
       if (!updateResponse.ok) {
         console.error(
-          "No se pudo actualizar el estado:",
+          "No se pudo actualizar followed_shipments:",
           await updateResponse.text()
         );
       }
@@ -152,7 +366,8 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       received: true,
       tracking_number: trackingNumber,
-      followers: followers.length
+      followers: followers.length,
+      emails_sent: emailsSent
     });
 
   } catch (error) {
