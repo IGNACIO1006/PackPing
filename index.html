@@ -1737,12 +1737,13 @@ result.innerHTML = `
       <div class="tracking-header-actions">
 
   <button
-    class="notify-btn"
-    id="notifyBtn"
-    type="button"
-    title="Activar avisos"
-    aria-label="Activar avisos"
-  >
+  class="notify-btn"
+  id="notifyBtn"
+  style="${tracking.tag === "Delivered" ? "display:none;" : ""}"
+  type="button"
+  title="Activar avisos"
+  aria-label="Activar avisos"
+>
     <svg
       width="18"
       height="18"
