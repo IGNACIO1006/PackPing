@@ -1854,65 +1854,7 @@ animatedElements.forEach((element) => {
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
- 
 
-
-// CREAR CUENTA
-registerBtn.addEventListener("click", async () => {
-
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
-
-  if (!email || !password) {
-    loginMessage.textContent =
-      "Ingresá un email y una contraseña para crear tu cuenta.";
-    return;
-  }
-
-  loginMessage.textContent = "Creando cuenta...";
-
-  const { error } = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: window.location.origin
-    }
-  });
-
-  if (error) {
-    loginMessage.textContent = error.message;
-    return;
-  }
-
-  loginMessage.textContent =
-    "Cuenta creada. Revisá tu email para confirmarla.";
-});
-
-
-// MOSTRAR USUARIO LOGUEADO
-async function updateUserInterface() {
-
-  const {
-    data: { user }
-  } = await supabaseClient.auth.getUser();
-
-  if (!user) {
-    loginBtn.textContent = "Iniciar sesión";
-    return;
-  }
-
-  const name =
-    user.user_metadata?.full_name ||
-    user.user_metadata?.name ||
-    user.email?.split("@")[0] ||
-    "Mi cuenta";
-
-  loginBtn.textContent = `👤 ${name}`;
-}
-
-updateUserInterface();
-</script>
 <!-- MODAL LOGIN PACKPING -->
 <div class="login-modal" id="loginModal">
   <div class="login-overlay" id="loginOverlay"></div>
@@ -1969,17 +1911,16 @@ updateUserInterface();
     </p>
 
     <p class="login-message" id="loginMessage"></p>
-  </div>
-</div> 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  const SUPABASE_URL = "https://qclieaasdqkuxwsudnli.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yKHBS5u5klkA2_L00QkAsg_ceMYHnD-";
+    <script>
+const SUPABASE_URL = "https://qclieaasdqkuxwsudnli.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY ="sb_publishable_yKHBS5u5klkA2_L00QkAsg_ceMYHnD-";
 
-  const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
-  const loginBtn = document.getElementById("loginBtn");
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+const loginBtn = document.getElementById("loginBtn");
 const loginModal = document.getElementById("loginModal");
 const loginClose = document.getElementById("loginClose");
 const loginOverlay = document.getElementById("loginOverlay");
@@ -1989,6 +1930,7 @@ const registerBtn = document.getElementById("registerBtn");
 const loginMessage = document.getElementById("loginMessage");
 
 function openLogin() {
+  loginMessage.textContent = "";
   loginModal.classList.add("open");
 }
 
@@ -1996,6 +1938,26 @@ function closeLogin() {
   loginModal.classList.remove("open");
 }
 
+function showUser(session) {
+  const user = session?.user;
+
+  if (!user) {
+    loginBtn.textContent = "Iniciar sesión";
+    return;
+  }
+
+  const name =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "Mi cuenta";
+
+  loginBtn.textContent = `👤 ${name}`;
+  closeLogin();
+}
+
+
+// ABRIR LOGIN
 loginBtn.addEventListener("click", (e) => {
   e.preventDefault();
   openLogin();
@@ -2007,7 +1969,6 @@ loginOverlay.addEventListener("click", closeLogin);
 
 // LOGIN CON GOOGLE
 googleLoginBtn.addEventListener("click", async () => {
-
   loginMessage.textContent = "Conectando con Google...";
 
   const { error } = await supabaseClient.auth.signInWithOAuth({
@@ -2027,15 +1988,16 @@ googleLoginBtn.addEventListener("click", async () => {
 emailLoginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("loginEmail").value;
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
   loginMessage.textContent = "Iniciando sesión...";
 
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
   if (error) {
     loginMessage.textContent = error.message;
@@ -2043,15 +2005,13 @@ emailLoginForm.addEventListener("submit", async (e) => {
   }
 
   loginMessage.textContent = "Sesión iniciada ✓";
-
-  setTimeout(() => {
-    closeLogin();
-    updateUserInterface();
-  }, 600);
+  showUser(data.session);
 });
-  // CREAR CUENTA
+
+
+// CREAR CUENTA
 registerBtn.addEventListener("click", async () => {
-  const email = document.getElementById("loginEmail").value;
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
   if (!email || !password) {
@@ -2062,7 +2022,7 @@ registerBtn.addEventListener("click", async () => {
 
   loginMessage.textContent = "Creando cuenta...";
 
-  const { error } = await supabaseClient.auth.signUp({
+  const { data, error } = await supabaseClient.auth.signUp({
     email,
     password,
     options: {
@@ -2075,40 +2035,35 @@ registerBtn.addEventListener("click", async () => {
     return;
   }
 
-  loginMessage.textContent =
-    "Cuenta creada. Revisá tu email para confirmarla.";
+  if (data.session) {
+    loginMessage.textContent = "Cuenta creada ✓";
+    showUser(data.session);
+  } else {
+    loginMessage.textContent =
+      "Cuenta creada. Revisá tu email para confirmarla.";
+  }
 });
 
 
-// ACTUALIZAR BOTÓN SEGÚN EL USUARIO
-async function updateUserInterface() {
+// COMPROBAR SESIÓN EXISTENTE
+(async () => {
   const {
-    data: { user }
-  } = await supabaseClient.auth.getUser();
+    data: { session }
+  } = await supabaseClient.auth.getSession();
 
-  if (!user) {
-    loginBtn.textContent = "Iniciar sesión";
-    return;
-  }
-
-  const name =
-    user.user_metadata?.full_name ||
-    user.user_metadata?.name ||
-    user.email?.split("@")[0] ||
-    "Mi cuenta";
-
-  loginBtn.textContent = `👤 ${name}`;
-}
+  showUser(session);
+})();
 
 
 // DETECTAR CAMBIOS DE SESIÓN
-supabaseClient.auth.onAuthStateChange(() => {
-  updateUserInterface();
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+  setTimeout(() => {
+    showUser(session);
+  }, 0);
 });
+</script>
 
-
-// COMPROBAR SI YA HAY UNA SESIÓN AL ABRIR PACKPING
-updateUserInterface();
-    </script>
 </body>
 </html>
+
+ 
