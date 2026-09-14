@@ -2786,48 +2786,50 @@ ${
       behavior: "smooth",
       block: "center"
     });
-    document.querySelectorAll(".edit-reference-btn").forEach((button) => {
-  button.addEventListener("click", async () => {
+   list.onclick = async (event) => {
+  const button = event.target.closest(".edit-reference-btn");
 
-    const shipmentId = button.dataset.shipmentId;
+  if (!button) return;
 
-    const shipment = shipments.find(
-      (item) => String(item.id) === String(shipmentId)
-    );
+  const shipmentId = button.dataset.shipmentId;
 
-    if (!shipment) return;
+  const shipment = shipments.find(
+    (item) => String(item.id) === String(shipmentId)
+  );
 
-    const newReference = window.prompt(
-      "Referencia del envío:",
-      shipment.reference_name || ""
-    );
+  if (!shipment) return;
 
-    if (newReference === null) return;
+  const newReference = window.prompt(
+    "Referencia del envío:",
+    shipment.reference_name || ""
+  );
 
-    const cleanReference = newReference.trim();
+  if (newReference === null) return;
 
-    if (cleanReference.length > 60) {
-      alert("La referencia puede tener hasta 60 caracteres.");
-      return;
-    }
+  const cleanReference = newReference.trim();
 
-    const { error } = await supabaseClient
-      .from("followed_shipments")
-      .update({
-        reference_name: cleanReference || null,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", shipment.id)
-      .eq("user_id", user.id);
+  if (cleanReference.length > 60) {
+    alert("La referencia puede tener hasta 60 caracteres.");
+    return;
+  }
 
-    if (error) {
-      console.error(error);
-      alert("No pudimos actualizar la referencia.");
-      return;
-    }
+  const { error } = await supabaseClient
+    .from("followed_shipments")
+    .update({
+      reference_name: cleanReference || null,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", shipment.id)
+    .eq("user_id", user.id);
 
-    loadMyShipments();
-  });
+  if (error) {
+    console.error(error);
+    alert("No pudimos actualizar la referencia.");
+    return;
+  }
+
+  await loadMyShipments();
+};
 });
 
     // Rastreamos automáticamente
