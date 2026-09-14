@@ -1952,37 +1952,18 @@ if (notifyBtn) {
       return;
     }
 
-    // ACTIVAR / GUARDAR
-    const { error } = await supabaseClient
-      .from("followed_shipments")
-      .upsert(
-        {
-          user_id: user.id,
-          tracking_number: trackingNumber,
-          carrier: carrierName,
-          current_status: status,
-          last_checkpoint: message,
-          notifications_enabled: true,
-          updated_at: new Date().toISOString()
-        },
-        {
-          onConflict: "user_id,tracking_number"
-        }
-      );
+ // ACTIVAR / GUARDAR
+pendingShipmentNotification = {
+  userId: user.id,
+  trackingNumber,
+  carrierName,
+  status,
+  message,
+  notifyBtn
+};
 
-    if (error) {
-      console.error(error);
-      alert("No pudimos activar los avisos.");
-      return;
-    }
-
-    notifyBtn.classList.add("active");
-    notifyBtn.title = "Avisos activados";
-    notifyBtn.setAttribute("aria-label", "Desactivar avisos");
-
-    alert(
-      `🔔 Avisos activados\n\nEstado actual: ${status}\n\nTe avisaremos cuando este envío tenga una nueva actualización.`
-    );
+openReferenceModal();
+return; 
   });
 }
     result.classList.add('show');
@@ -2095,8 +2076,57 @@ animatedElements.forEach((element) => {
       <button type="button" id="registerBtn">Crear cuenta</button>
     </p>
 
-    <p class="login-message" id="loginMessage"></p>
-    <script>
+   <p class="login-message" id="loginMessage"></p>
+
+  </div>
+</div>
+
+<!-- MODAL REFERENCIA DEL ENVIO -->
+<div class="reference-modal" id="referenceModal">
+
+  <div class="reference-overlay" id="referenceOverlay"></div>
+
+  <div class="reference-box">
+
+    <button
+      class="reference-close"
+      id="referenceClose"
+      type="button"
+    >
+      ×
+    </button>
+
+    <h3>Seguir este envío</h3>
+
+    <p>
+      Poné una referencia para reconocerlo fácilmente.
+      Es opcional.
+    </p>
+
+    <label for="referenceInput">
+      Referencia del envío
+    </label>
+
+    <input
+      type="text"
+      id="referenceInput"
+      maxlength="60"
+      placeholder="Ej: Zapatillas Nike"
+    >
+
+    <button
+      type="button"
+      class="reference-save-btn"
+      id="referenceSaveBtn"
+    >
+      🔔 Guardar y activar avisos
+    </button>
+
+  </div>
+
+</div>
+
+<script>
 const SUPABASE_URL = "https://qclieaasdqkuxwsudnli.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY ="sb_publishable_yKHBS5u5klkA2_L00QkAsg_ceMYHnD-";
 
@@ -2113,7 +2143,80 @@ const googleLoginBtn = document.getElementById("googleLoginBtn");
 const emailLoginForm = document.getElementById("emailLoginForm");
 const registerBtn = document.getElementById("registerBtn");
 const loginMessage = document.getElementById("loginMessage");
+  const referenceModal = document.getElementById("referenceModal");
+const referenceOverlay = document.getElementById("referenceOverlay");
+const referenceClose = document.getElementById("referenceClose");
+const referenceInput = document.getElementById("referenceInput");
+const referenceSaveBtn = document.getElementById("referenceSaveBtn");
 
+let pendingShipmentNotification = null;
+
+function openReferenceModal() {
+  referenceInput.value = "";
+  referenceModal.classList.add("open");
+
+  setTimeout(() => {
+    referenceInput.focus();
+  }, 100);
+}
+
+function closeReferenceModal() {
+  referenceModal.classList.remove("open");
+  pendingShipmentNotification = null;
+}
+
+referenceClose.addEventListener("click", closeReferenceModal);
+referenceOverlay.addEventListener("click", closeReferenceModal);
+referenceSaveBtn.addEventListener("click", async () => {
+  if (!pendingShipmentNotification) return;
+
+  const shipment = pendingShipmentNotification;
+  const referenceName = referenceInput.value.trim();
+
+  referenceSaveBtn.disabled = true;
+  referenceSaveBtn.textContent = "Guardando...";
+
+  const { error } = await supabaseClient
+    .from("followed_shipments")
+    .upsert(
+      {
+        user_id: shipment.userId,
+        tracking_number: shipment.trackingNumber,
+        carrier: shipment.carrierName,
+        current_status: shipment.status,
+        last_checkpoint: shipment.message,
+        reference_name: referenceName || null,
+        notifications_enabled: true,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: "user_id,tracking_number"
+      }
+    );
+
+  referenceSaveBtn.disabled = false;
+  referenceSaveBtn.textContent = "🔔 Guardar y activar avisos";
+
+  if (error) {
+    console.error(error);
+    alert("No pudimos activar los avisos.");
+    return;
+  }
+
+  shipment.notifyBtn.classList.add("active");
+  shipment.notifyBtn.title = "Avisos activados";
+  shipment.notifyBtn.setAttribute("aria-label", "Desactivar avisos");
+
+  closeReferenceModal();
+
+  if (typeof loadMyShipments === "function") {
+    loadMyShipments();
+  }
+
+  alert(
+    `🔔 Avisos activados\n\n${referenceName ? `Referencia: ${referenceName}\n\n` : ""}Te avisaremos cuando este envío tenga una nueva actualización.`
+  );
+});
 function openLogin() {
   loginMessage.textContent = "";
   loginModal.classList.add("open");
