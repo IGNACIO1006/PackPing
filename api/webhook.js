@@ -234,77 +234,142 @@ module.exports = async function handler(req, res) {
             from: "PackPing <onboarding@resend.dev>",
             to: [email],
             subject,
-            html: `
-              <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0f2040;">
-                
-                <h2 style="color:#2F66E8;">
-                  PackPing
-                </h2>
+html: `
+  <div style="
+    font-family:Arial,Helvetica,sans-serif;
+    max-width:560px;
+    margin:0 auto;
+    padding:30px 20px;
+    color:#0f2040;
+  ">
 
-                <p style="font-size:16px;">
-                  Tu envio tiene una nueva actualizacion.
-                </p>
+    <div style="margin-bottom:28px;">
+      <img
+        src="https://pack-ping.vercel.app/favicon.png"
+        alt="PackPing"
+        width="42"
+        height="42"
+        style="
+          display:inline-block;
+          vertical-align:middle;
+          margin-right:8px;
+        "
+      >
 
-                <div style="
-                  background:#f7f9fc;
-                  border:1px solid #e2e8f0;
-                  border-radius:14px;
-                  padding:20px;
-                  margin:20px 0;
-                ">
-                  <p style="margin:0 0 8px;">
-                    <strong>${escapeHtml(carrier)}</strong>
-                  </p>
+      <span style="
+        display:inline-block;
+        vertical-align:middle;
+        font-size:28px;
+        font-weight:700;
+        color:#2F66E8;
+      ">
+        PackPing
+      </span>
+    </div>
 
-                  <p style="margin:0 0 12px;color:#64748b;">
-                    ${escapeHtml(trackingNumber)}
-                  </p>
+    <h2 style="
+      margin:0 0 10px;
+      font-size:24px;
+      color:#0f2040;
+    ">
+      Tu envío tiene una nueva actualización
+    </h2>
 
-                  <p style="font-size:18px;margin:0 0 10px;">
-                    <strong>${escapeHtml(friendlyStatus)}</strong>
-                  </p>
+    <p style="
+      margin:0 0 24px;
+      font-size:16px;
+      color:#475569;
+    ">
+      Hay novedades en uno de los envíos que estás siguiendo.
+    </p>
 
-                  <p style="margin:0;">
-                    ${escapeHtml(latestMessage)}
-                  </p>
+    <div style="
+      background:#F7F9FC;
+      border:1px solid #E2E8F0;
+      border-radius:16px;
+      padding:22px;
+      margin-bottom:24px;
+    ">
 
-                  ${
-                    location
-                      ? `
-                        <p style="margin:10px 0 0;color:#64748b;">
-                          ${escapeHtml(location)}
-                        </p>
-                      `
-                      : ""
-                  }
-                </div>
+      <p style="
+        margin:0 0 6px;
+        font-size:15px;
+        font-weight:700;
+        color:#0f2040;
+        text-transform:uppercase;
+      ">
+        ${escapeHtml(carrier)}
+      </p>
 
-                <a
-                  href="https://pack-ping.vercel.app"
-                  style="
-                    display:inline-block;
-                    background:#2F66E8;
-                    color:white;
-                    text-decoration:none;
-                    padding:12px 20px;
-                    border-radius:9px;
-                    font-weight:bold;
-                  "
-                >
-                  Ver en PackPing
-                </a>
+      <p style="
+        margin:0 0 18px;
+        color:#64748B;
+        font-size:15px;
+      ">
+        ${escapeHtml(trackingNumber)}
+      </p>
 
-                <p style="
-                  margin-top:24px;
-                  color:#94a3b8;
-                  font-size:12px;
-                ">
-                  Recibis este correo porque activaste la campana
-                  para este envio en PackPing.
-                </p>
+      <p style="
+        margin:0 0 8px;
+        font-size:23px;
+        font-weight:700;
+        color:#0f2040;
+      ">
+        ${escapeHtml(friendlyStatus)}
+      </p>
 
-              </div>
-            `
+      <p style="
+        margin:0;
+        font-size:16px;
+        color:#334155;
+      ">
+        ${escapeHtml(latestMessage)}
+      </p>
+
+      ${
+        location
+          ? `
+            <p style="
+              margin:14px 0 0;
+              color:#64748B;
+              font-size:14px;
+            ">
+              📍 ${escapeHtml(location)}
+            </p>
+          `
+          : ""
+      }
+
+    </div>
+
+    <a
+      href="https://pack-ping.vercel.app/"
+      target="_blank"
+      style="
+        display:inline-block;
+        background:#2F66E8;
+        color:#FFFFFF;
+        text-decoration:none;
+        padding:14px 24px;
+        border-radius:10px;
+        font-size:16px;
+        font-weight:700;
+      "
+    >
+      Ver en PackPing
+    </a>
+
+    <p style="
+      margin-top:28px;
+      color:#94A3B8;
+      font-size:12px;
+      line-height:1.5;
+    ">
+      Recibís este correo porque activaste la campana para este envío en PackPing.
+    </p>
+
+  </div>
+`
           })
         }
       );
