@@ -1165,36 +1165,20 @@ body
           <p>Recibí un aviso cuando tu paquete sale a reparto, se entrega o necesita tu atención. Nada de notificaciones vacías.</p>
         </div>
       </div>
+<div class="panel-demo">
 
-      <div class="panel-demo">
-        <p class="panel-demo-greeting">Buenos días, <strong>Ignacio</strong> · Mis envíos</p>
+  <p class="panel-demo-greeting" id="myShipmentsGreeting">
+    Mis envíos
+  </p>
 
-        <div class="shipment-card">
-          <div class="shipment-info">
-            <span class="shipment-name">Zapatillas</span>
-            <span class="shipment-carrier">FedEx</span>
-          </div>
-          <span class="shipment-status entregado">Entregado</span>
-        </div>
+  <div id="myShipmentsList">
+    <p style="color:#64748b;">
+      Cargando tus envíos...
+    </p>
+  </div>
 
-        <div class="shipment-card">
-          <div class="shipment-info">
-            <span class="shipment-name">Pedido MercadoLibre</span>
-            <span class="shipment-carrier">UES</span>
-          </div>
-          <span class="shipment-status reparto">En reparto</span>
-        </div>
-
-        <div class="shipment-card">
-          <div class="shipment-info">
-            <span class="shipment-name">Regalo</span>
-            <span class="shipment-carrier">DHL</span>
-          </div>
-          <span class="shipment-status transito">En tránsito</span>
-        </div>
-
-        <button class="add-shipment" type="button">+ Agregar envío</button>
-      </div>
+</div>
+     
     </div>
   </section>
 
@@ -2217,6 +2201,176 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
     showUser(session);
   }, 0);
 });
+      // ==============================
+// MIS ENVIOS
+// ==============================
+
+function shipmentStatusName(status = "") {
+  const names = {
+    Pending: "Pendiente",
+    InfoReceived: "Información recibida",
+    InTransit: "En tránsito",
+    OutForDelivery: "En reparto",
+    AttemptFail: "Intento fallido",
+    Delivered: "Entregado",
+    AvailableForPickup: "Disponible para retirar",
+    Exception: "Requiere atención",
+    Expired: "Sin actualizaciones",
+
+    Pendiente: "Pendiente",
+    "En tránsito": "En tránsito",
+    "En reparto": "En reparto",
+    Entregado: "Entregado"
+  };
+
+  return names[status] || status || "Sin estado";
+}
+
+function shipmentStatusClass(status = "") {
+  if (status === "Delivered" || status === "Entregado") {
+    return "entregado";
+  }
+
+  if (status === "OutForDelivery" || status === "En reparto") {
+    return "reparto";
+  }
+
+  return "transito";
+}
+
+function safeShipmentText(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+async function loadMyShipments() {
+  const list = document.getElementById("myShipmentsList");
+  const greeting = document.getElementById("myShipmentsGreeting");
+
+  if (!list) return;
+
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    greeting.textContent = "Mis envíos";
+
+    list.innerHTML = `
+      <p style="color:#64748b;">
+        Iniciá sesión para ver los envíos que estás siguiendo.
+      </p>
+    `;
+
+    return;
+  }
+
+  const name =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "";
+
+  greeting.innerHTML =
+    `Buenos días, <strong>${safeShipmentText(name)}</strong> · Mis envíos`;
+
+  const { data: shipments, error } = await supabaseClient
+    .from("followed_shipments")
+    .select(`
+      id,
+      tracking_number,
+      carrier,
+      current_status,
+      last_checkpoint,
+      notifications_enabled,
+      updated_at
+    `)
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+
+    list.innerHTML = `
+      <p style="color:#64748b;">
+        No pudimos cargar tus envíos.
+      </p>
+    `;
+
+    return;
+  }
+
+  if (!shipments || shipments.length === 0) {
+    list.innerHTML = `
+      <p style="color:#64748b;">
+        Todavía no estás siguiendo ningún envío.
+        Rastreá un paquete y activá la campana 🔔.
+      </p>
+    `;
+
+    return;
+  }
+
+  list.innerHTML = shipments.map((shipment) => {
+
+    const status =
+      shipmentStatusName(shipment.current_status);
+
+    const statusClass =
+      shipmentStatusClass(shipment.current_status);
+
+    const bell =
+      shipment.notifications_enabled ? "🔔" : "";
+
+    return `
+      <div class="shipment-card">
+
+        <div class="shipment-info">
+          <span class="shipment-name">
+            ${safeShipmentText(shipment.tracking_number)}
+          </span>
+
+          <span class="shipment-carrier">
+            ${safeShipmentText(shipment.carrier || "Transportista")}
+            ${bell}
+          </span>
+
+          ${
+            shipment.last_checkpoint
+              ? `
+                <span style="
+                  display:block;
+                  margin-top:5px;
+                  font-size:12px;
+                  color:#94a3b8;
+                ">
+                  ${safeShipmentText(shipment.last_checkpoint)}
+                </span>
+              `
+              : ""
+          }
+        </div>
+
+        <span class="shipment-status ${statusClass}">
+          ${safeShipmentText(status)}
+        </span>
+
+      </div>
+    `;
+  }).join("");
+}
+
+loadMyShipments();
+
+supabaseClient.auth.onAuthStateChange(() => {
+  setTimeout(() => {
+    loadMyShipments();
+  }, 0);
+});
+      
 </script>
 
 </body>
