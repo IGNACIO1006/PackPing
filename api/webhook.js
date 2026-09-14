@@ -228,7 +228,7 @@ module.exports = async function handler(req, res) {
             Authorization: `Bearer ${resendKey}`,
             "Content-Type": "application/json",
             "Idempotency-Key":
-              `packping-${event.event_id || Date.now()}-${follower.user_id}`
+  `packping-v2-${event.event_id || Date.now()}-${follower.user_id}`
           },
           body: JSON.stringify({
             from: "PackPing <onboarding@resend.dev>",
