@@ -979,6 +979,23 @@ body
   align-items:center;
   gap:9px;
 }  
+    .view-shipment-btn{
+  border:1px solid #D5E1FF;
+  background:#EEF4FF;
+  color:#2F66E8;
+  border-radius:8px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.view-shipment-btn:hover{
+  background:#2F66E8;
+  color:#fff;
+  border-color:#2F66E8;
+}
 </style>
 </head>
 <body>
@@ -2354,13 +2371,62 @@ async function loadMyShipments() {
           }
         </div>
 
-        <span class="shipment-status ${statusClass}">
-          ${safeShipmentText(status)}
-        </span>
+<div style="
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+">
 
-      </div>
+  <span class="shipment-status ${statusClass}">
+    ${safeShipmentText(status)}
+  </span>
+
+  <button
+    type="button"
+    class="view-shipment-btn"
+    data-tracking="${safeShipmentText(shipment.tracking_number)}"
+  >
+    Ver seguimiento
+  </button>
+
+</div>
+
+</div>
     `;
   }).join("");
+  document.querySelectorAll(".view-shipment-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+
+    const trackingNumber =
+      button.dataset.tracking;
+
+    const trackingInput =
+      document.getElementById("trackingNumber");
+
+    const carrierSelect =
+      document.getElementById("carrier");
+
+    const trackingForm =
+      document.getElementById("trackForm");
+
+    trackingInput.value = trackingNumber;
+
+    // Dejamos que PackPing detecte la transportista
+    carrierSelect.value = "auto";
+
+    // Subimos al buscador
+    document.getElementById("buscar").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+    // Rastreamos automáticamente
+    setTimeout(() => {
+      trackingForm.requestSubmit();
+    }, 500);
+  });
+});
 }
 
 loadMyShipments();
