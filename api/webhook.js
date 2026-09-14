@@ -244,17 +244,18 @@ html: `
   ">
 
     <div style="margin-bottom:28px;">
-      <img
-        src="https://pack-ping.vercel.app/favicon.png"
-        alt="PackPing"
-        width="42"
-        height="42"
-        style="
-          display:inline-block;
-          vertical-align:middle;
-          margin-right:8px;
-        "
-      >
+  <img
+    src="https://pack-ping.vercel.app/logo-email.png"
+    alt="PackPing"
+    width="150"
+    style="
+      display:block;
+      width:150px;
+      height:auto;
+      border:0;
+    "
+  >
+</div>
 
       <span style="
         display:inline-block;
