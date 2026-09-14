@@ -2592,8 +2592,7 @@ async function loadMyShipments() {
   greeting.innerHTML =
     `Buenos días, <strong>${safeShipmentText(name)}</strong> · Mis envíos`;
 
-  const { data: shipments, error } = await supabaseClient
-    .from("followed_shipments")
+  
   const { data: shipments, error } = await supabaseClient
   .from("followed_shipments")
   .select(`
@@ -2608,8 +2607,6 @@ async function loadMyShipments() {
   `)
   .eq("user_id", user.id)
   .order("updated_at", { ascending: false });
-    .eq("user_id", user.id)
-    .order("updated_at", { ascending: false });
 
   if (error) {
     console.error(error);
