@@ -1112,6 +1112,40 @@ body
   background:#2F66E8;
   color:#fff;
 }
+    .shipment-reference{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-top:4px;
+}
+
+.shipment-reference span{
+  font-size:13px;
+  font-weight:600;
+  color:#334155;
+}
+
+.edit-reference-btn{
+  border:0;
+  background:transparent;
+  padding:2px 4px;
+  cursor:pointer;
+  font-size:12px;
+  border-radius:5px;
+}
+
+.edit-reference-btn:hover{
+  background:#EEF4FF;
+}
+
+.add-reference-btn{
+  display:block;
+  margin-top:4px;
+  padding:0;
+  color:#2F66E8;
+  font-size:12px;
+  font-weight:600;
+}
 </style>
 </head>
 <body>
@@ -1842,7 +1876,7 @@ result.innerHTML = `
   <button
     class="notify-btn"
     id="notifyBtn"
-    style=""
+    style="${tracking.tag === "Delivered" ? "display:none;" : ""}"
     type="button"
     title="Activar avisos"
     aria-label="Activar avisos"
@@ -2653,17 +2687,31 @@ async function loadMyShipments() {
 ${
   shipment.reference_name
     ? `
-      <span style="
-        display:block;
-        margin-top:4px;
-        font-size:13px;
-        font-weight:600;
-        color:#334155;
-      ">
-        ${safeShipmentText(shipment.reference_name)}
-      </span>
+      <div class="shipment-reference">
+        <span>
+          ${safeShipmentText(shipment.reference_name)}
+        </span>
+
+        <button
+          type="button"
+          class="edit-reference-btn"
+          data-shipment-id="${shipment.id}"
+          title="Editar referencia"
+          aria-label="Editar referencia"
+        >
+          ✏️
+        </button>
+      </div>
     `
-    : ""
+    : `
+      <button
+        type="button"
+        class="edit-reference-btn add-reference-btn"
+        data-shipment-id="${shipment.id}"
+      >
+        + Agregar referencia
+      </button>
+    `
 }
 
 <span class="shipment-carrier">
@@ -2738,6 +2786,49 @@ ${
       behavior: "smooth",
       block: "center"
     });
+    document.querySelectorAll(".edit-reference-btn").forEach((button) => {
+  button.addEventListener("click", async () => {
+
+    const shipmentId = button.dataset.shipmentId;
+
+    const shipment = shipments.find(
+      (item) => String(item.id) === String(shipmentId)
+    );
+
+    if (!shipment) return;
+
+    const newReference = window.prompt(
+      "Referencia del envío:",
+      shipment.reference_name || ""
+    );
+
+    if (newReference === null) return;
+
+    const cleanReference = newReference.trim();
+
+    if (cleanReference.length > 60) {
+      alert("La referencia puede tener hasta 60 caracteres.");
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("followed_shipments")
+      .update({
+        reference_name: cleanReference || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", shipment.id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error(error);
+      alert("No pudimos actualizar la referencia.");
+      return;
+    }
+
+    loadMyShipments();
+  });
+});
 
     // Rastreamos automáticamente
     setTimeout(() => {
