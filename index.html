@@ -1040,6 +1040,78 @@ body
 .faq-section{
   background:#fff !important;
 }
+    .notify-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.reference-popover{
+  display:none;
+  position:absolute;
+  z-index:100;
+  top:44px;
+  right:0;
+  width:270px;
+  padding:14px;
+  background:#fff;
+  border:1px solid #DCE3EE;
+  border-radius:12px;
+  box-shadow:0 15px 40px rgba(15,32,64,.18);
+}
+
+.reference-popover.open{
+  display:block;
+}
+
+.reference-popover strong{
+  display:block;
+  margin-bottom:9px;
+  font-size:13px;
+  color:#0F2040;
+}
+
+.reference-popover input{
+  width:100%;
+  box-sizing:border-box;
+  padding:9px 10px;
+  border:1px solid #D5DFEC;
+  border-radius:8px;
+  font:inherit;
+  font-size:13px;
+  outline:none;
+}
+
+.reference-popover input:focus{
+  border-color:#2F66E8;
+  box-shadow:0 0 0 3px rgba(47,102,232,.10);
+}
+
+.reference-popover-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+  margin-top:10px;
+}
+
+.reference-popover-actions button{
+  border:0;
+  border-radius:7px;
+  padding:7px 10px;
+  cursor:pointer;
+  font-weight:600;
+  font-size:12px;
+}
+
+#referenceCancelBtn{
+  background:#F1F5F9;
+  color:#64748B;
+}
+
+#referenceInlineSaveBtn{
+  background:#2F66E8;
+  color:#fff;
+}
 </style>
 </head>
 <body>
@@ -1765,14 +1837,16 @@ result.innerHTML = `
 
       <div class="tracking-header-actions">
 
+<div class="notify-wrap">
+
   <button
-  class="notify-btn"
-  id="notifyBtn"
-  style=""
-  type="button"
-  title="Activar avisos"
-  aria-label="Activar avisos"
->
+    class="notify-btn"
+    id="notifyBtn"
+    style=""
+    type="button"
+    title="Activar avisos"
+    aria-label="Activar avisos"
+  >
     <svg
       width="18"
       height="18"
@@ -1788,6 +1862,31 @@ result.innerHTML = `
       <path d="M13.7 21a2 2 0 0 1-3.4 0"></path>
     </svg>
   </button>
+
+  <div class="reference-popover" id="referencePopover">
+
+    <strong>Referencia del envío</strong>
+
+    <input
+      type="text"
+      id="referenceInlineInput"
+      maxlength="60"
+      placeholder="Ej: Zapatillas Nike"
+    >
+
+    <div class="reference-popover-actions">
+      <button type="button" id="referenceCancelBtn">
+        Cancelar
+      </button>
+
+      <button type="button" id="referenceInlineSaveBtn">
+        Guardar
+      </button>
+    </div>
+
+  </div>
+
+</div>
   <span class="tracking-status-new status-${currentStage}">
     ${safe(status)}
   </span>
@@ -1888,6 +1987,10 @@ result.innerHTML = `
 // CAMPANA DE AVISOS
 // ==============================
 const notifyBtn = document.getElementById("notifyBtn");
+    const referencePopover = document.getElementById("referencePopover");
+const referenceInlineInput = document.getElementById("referenceInlineInput");
+const referenceCancelBtn = document.getElementById("referenceCancelBtn");
+const referenceInlineSaveBtn = document.getElementById("referenceInlineSaveBtn");
 
 if (notifyBtn) {
 
@@ -1962,9 +2065,73 @@ pendingShipmentNotification = {
   notifyBtn
 };
 
-openReferenceModal();
-return; 
+referencePopover.classList.add("open");
+referenceInlineInput.value = "";
+
+setTimeout(() => {
+  referenceInlineInput.focus();
+}, 50);
+
+return;
   });
+  referenceCancelBtn.addEventListener("click", () => {
+  referencePopover.classList.remove("open");
+  pendingShipmentNotification = null;
+});
+
+referenceInlineSaveBtn.addEventListener("click", async () => {
+  if (!pendingShipmentNotification) return;
+
+  const shipment = pendingShipmentNotification;
+  const referenceName = referenceInlineInput.value.trim();
+
+  referenceInlineSaveBtn.disabled = true;
+  referenceInlineSaveBtn.textContent = "Guardando...";
+
+  const { error } = await supabaseClient
+    .from("followed_shipments")
+    .upsert(
+      {
+        user_id: shipment.userId,
+        tracking_number: shipment.trackingNumber,
+        carrier: shipment.carrierName,
+        current_status: shipment.status,
+        last_checkpoint: shipment.message,
+        reference_name: referenceName || null,
+        notifications_enabled: true,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: "user_id,tracking_number"
+      }
+    );
+
+  referenceInlineSaveBtn.disabled = false;
+  referenceInlineSaveBtn.textContent = "Guardar";
+
+  if (error) {
+    console.error(error);
+    alert("No pudimos activar los avisos.");
+    return;
+  }
+
+  shipment.notifyBtn.classList.add("active");
+  shipment.notifyBtn.title = "Avisos activados";
+  shipment.notifyBtn.setAttribute("aria-label", "Desactivar avisos");
+
+  referencePopover.classList.remove("open");
+  pendingShipmentNotification = null;
+
+  if (typeof loadMyShipments === "function") {
+    loadMyShipments();
+  }
+
+  alert(
+    referenceName
+      ? `🔔 Avisos activados\n\nReferencia: ${referenceName}`
+      : "🔔 Avisos activados"
+  );
+});
 }
     result.classList.add('show');
     
@@ -2082,7 +2249,7 @@ animatedElements.forEach((element) => {
 </div>
 
 <!-- MODAL REFERENCIA DEL ENVIO -->
-<div class="reference-modal" id="referenceModal">
+<div class="reference-modal" id="referenceModal" style="display:none !important;">
 
   <div class="reference-overlay" id="referenceOverlay"></div>
 
