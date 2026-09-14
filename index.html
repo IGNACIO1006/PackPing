@@ -2761,32 +2761,30 @@ ${
 </div>
     `;
   }).join("");
-  document.querySelectorAll(".view-shipment-btn").forEach((button) => {
+ document.querySelectorAll(".view-shipment-btn").forEach((button) => {
   button.addEventListener("click", () => {
+    const trackingNumber = button.dataset.tracking;
 
-    const trackingNumber =
-      button.dataset.tracking;
-
-    const trackingInput =
-      document.getElementById("trackingNumber");
-
-    const carrierSelect =
-      document.getElementById("carrier");
-
-    const trackingForm =
-      document.getElementById("trackForm");
+    const trackingInput = document.getElementById("trackingNumber");
+    const carrierSelect = document.getElementById("carrier");
+    const trackingForm = document.getElementById("trackForm");
 
     trackingInput.value = trackingNumber;
-
-    // Dejamos que PackPing detecte la transportista
     carrierSelect.value = "auto";
 
-    // Subimos al buscador
     document.getElementById("buscar").scrollIntoView({
       behavior: "smooth",
       block: "center"
     });
-   list.onclick = async (event) => {
+
+    setTimeout(() => {
+      trackingForm.requestSubmit();
+    }, 500);
+  });
+});
+
+
+list.onclick = async (event) => {
   const button = event.target.closest(".edit-reference-btn");
 
   if (!button) return;
@@ -2827,6 +2825,9 @@ ${
     alert("No pudimos actualizar la referencia.");
     return;
   }
+
+  await loadMyShipments();
+};
 
   await loadMyShipments();
 };
