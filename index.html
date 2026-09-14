@@ -996,6 +996,42 @@ body
   color:#fff;
   border-color:#2F66E8;
 }
+    /* MIS ENVIOS DENTRO DEL HERO */
+.hero-copy .panel-demo{
+  margin-top:28px;
+  width:100%;
+  max-width:520px;
+  background:#ffffff;
+  border:1px solid #DCE3EE;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 10px 28px rgba(15,32,64,.06);
+}
+
+.hero-copy .panel-demo-greeting{
+  margin:0 0 14px;
+  font-size:14px;
+  color:#64748B;
+}
+
+.hero-copy #myShipmentsList{
+  display:grid;
+  gap:10px;
+  max-height:360px;
+  overflow-y:auto;
+}
+
+.hero-copy .shipment-card{
+  width:100%;
+  box-sizing:border-box;
+}
+
+@media (max-width:860px){
+  .hero-copy .panel-demo{
+    max-width:none;
+    margin-top:24px;
+  }
+}
 </style>
 </head>
 <body>
@@ -1023,6 +1059,20 @@ body
         <h1>Rastrear paquete en tiempo real</h1>
         <p class="hero-sub"><strong>Todos tus envíos. Un solo lugar.</strong><br>
         Buscá un paquete, seguí su recorrido y guardá tu historial, sin saltar entre las páginas de cada transportista.</p>
+        <div class="panel-demo">
+
+  <p class="panel-demo-greeting" id="myShipmentsGreeting">
+    Mis envíos
+  </p>
+
+  <div id="myShipmentsList">
+    <p style="color:#64748b;">
+      Cargando tus envíos...
+    </p>
+  </div>
+
+</div>
+
       </div>
 
       <div class="hero-search" id="buscar">
@@ -1182,19 +1232,7 @@ body
           <p>Recibí un aviso cuando tu paquete sale a reparto, se entrega o necesita tu atención. Nada de notificaciones vacías.</p>
         </div>
       </div>
-<div class="panel-demo">
 
-  <p class="panel-demo-greeting" id="myShipmentsGreeting">
-    Mis envíos
-  </p>
-
-  <div id="myShipmentsList">
-    <p style="color:#64748b;">
-      Cargando tus envíos...
-    </p>
-  </div>
-
-</div>
      
     </div>
   </section>
