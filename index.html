@@ -2594,15 +2594,20 @@ async function loadMyShipments() {
 
   const { data: shipments, error } = await supabaseClient
     .from("followed_shipments")
-    .select(`
-      id,
-      tracking_number,
-      carrier,
-      current_status,
-      last_checkpoint,
-      notifications_enabled,
-      updated_at
-    `)
+  const { data: shipments, error } = await supabaseClient
+  .from("followed_shipments")
+  .select(`
+    id,
+    tracking_number,
+    carrier,
+    current_status,
+    last_checkpoint,
+    reference_name,
+    notifications_enabled,
+    updated_at
+  `)
+  .eq("user_id", user.id)
+  .order("updated_at", { ascending: false });
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
@@ -2644,14 +2649,30 @@ async function loadMyShipments() {
       <div class="shipment-card">
 
         <div class="shipment-info">
-          <span class="shipment-name">
-            ${safeShipmentText(shipment.tracking_number)}
-          </span>
+         <span class="shipment-name">
+  ${safeShipmentText(shipment.tracking_number)}
+</span>
 
-          <span class="shipment-carrier">
-            ${safeShipmentText(shipment.carrier || "Transportista")}
-            ${bell}
-          </span>
+${
+  shipment.reference_name
+    ? `
+      <span style="
+        display:block;
+        margin-top:4px;
+        font-size:13px;
+        font-weight:600;
+        color:#334155;
+      ">
+        ${safeShipmentText(shipment.reference_name)}
+      </span>
+    `
+    : ""
+}
+
+<span class="shipment-carrier">
+  ${safeShipmentText(shipment.carrier || "Transportista")}
+  ${bell}
+</span>
 
       ${
   shipment.last_checkpoint &&
