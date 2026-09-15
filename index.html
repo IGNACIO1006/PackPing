@@ -1159,6 +1159,35 @@ body
 .unfollow-shipment-btn:hover{
   color:#dc2626;
 } 
+    .shipment-filters{
+  display:flex;
+  gap:6px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+
+.shipment-filter{
+  border:1px solid #DCE3EE;
+  background:#fff;
+  color:#64748B;
+  border-radius:999px;
+  padding:6px 11px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.shipment-filter:hover{
+  border-color:#2F66E8;
+  color:#2F66E8;
+}
+
+.shipment-filter.active{
+  background:#2F66E8;
+  border-color:#2F66E8;
+  color:#fff;
+}
 </style>
 </head>
 <body>
@@ -1191,7 +1220,23 @@ body
   <p class="panel-demo-greeting" id="myShipmentsGreeting">
     Mis envíos
   </p>
+<div class="shipment-filters" id="shipmentFilters">
+  <button type="button" class="shipment-filter active" data-filter="all">
+    Todos
+  </button>
 
+  <button type="button" class="shipment-filter" data-filter="active">
+    Activos
+  </button>
+
+  <button type="button" class="shipment-filter" data-filter="delivered">
+    Entregados
+  </button>
+
+  <button type="button" class="shipment-filter" data-filter="attention">
+    Atención
+  </button>
+</div>
   <div id="myShipmentsList">
     <p style="color:#64748b;">
       Cargando tus envíos...
