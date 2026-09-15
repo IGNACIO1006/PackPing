@@ -2303,84 +2303,19 @@ referenceInlineSaveBtn.addEventListener("click", async () => {
 }
 } catch (error) {
 
-  console.error("Error al rastrear envío:", error);
-
-  const errorText = String(error?.message || "").toLowerCase();
-
-  let errorTitle = "No pudimos consultar este envío";
-  let errorMessage =
-    "Ocurrió un problema al consultar la información de seguimiento.";
-  let errorHelp =
-    "Intentá nuevamente en unos minutos.";
-
-  if (
-    errorText.includes("not found") ||
-    errorText.includes("no encontrado") ||
-    errorText.includes("404")
-  ) {
-    errorTitle = "No encontramos ese envío";
-    errorMessage =
-      "No pudimos encontrar información para ese número de seguimiento.";
-    errorHelp =
-      "Revisá que el número esté bien escrito o probá seleccionando manualmente la transportista.";
-  }
-
-  else if (
-    errorText.includes("courier") ||
-    errorText.includes("carrier") ||
-    errorText.includes("transportista")
-  ) {
-    errorTitle = "No pudimos detectar la transportista";
-    errorMessage =
-      "El número puede pertenecer a una empresa que no fue identificada automáticamente.";
-    errorHelp =
-      "Probá seleccionando la empresa de transporte manualmente.";
-  }
-
-  else if (
-    errorText.includes("429") ||
-    errorText.includes("rate limit") ||
-    errorText.includes("too many")
-  ) {
-    errorTitle = "Muchas consultas en este momento";
-    errorMessage =
-      "El servicio de seguimiento alcanzó temporalmente su límite de consultas.";
-    errorHelp =
-      "Esperá unos minutos e intentá nuevamente.";
-  }
-
-  else if (
-    errorText.includes("network") ||
-    errorText.includes("fetch") ||
-    errorText.includes("timeout") ||
-    errorText.includes("500") ||
-    errorText.includes("502") ||
-    errorText.includes("503")
-  ) {
-    errorTitle = "Problema temporal de conexión";
-    errorMessage =
-      "No pudimos comunicarnos correctamente con el servicio de seguimiento.";
-    errorHelp =
-      "Intentá nuevamente en unos minutos.";
-  }
-
   result.innerHTML = `
-    <span class="result-tag">
-      No se pudo completar la búsqueda
-    </span>
+    <span class="result-tag">No pudimos encontrar el envío</span>
 
     <div class="result-top">
-      <span class="result-title">
-        ${safe(errorTitle)}
-      </span>
+      <span class="result-title">${safe(trackingNumber)}</span>
     </div>
 
     <p class="result-msg">
-      ${safe(errorMessage)}
+      ${safe(error.message)}
     </p>
 
     <p class="result-meta">
-      ${safe(errorHelp)}
+      Revisá el número de seguimiento o probá seleccionando la transportista.
     </p>
   `;
 
