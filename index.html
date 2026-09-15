@@ -1146,6 +1146,19 @@ body
   font-size:12px;
   font-weight:600;
 }
+   .unfollow-shipment-btn{
+  border:0;
+  background:transparent;
+  color:#94a3b8;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  padding:7px 4px;
+}
+
+.unfollow-shipment-btn:hover{
+  color:#dc2626;
+} 
 </style>
 </head>
 <body>
@@ -2756,6 +2769,16 @@ ${
     Ver seguimiento
   </button>
 
+
+<button
+  type="button"
+  class="unfollow-shipment-btn"
+  data-shipment-id="${shipment.id}"
+
+>
+  Dejar de seguir
+</button>
+
 </div>
 
 </div>
@@ -2782,7 +2805,37 @@ ${
     }, 500);
   });
 });
+document.querySelectorAll(".unfollow-shipment-btn").forEach((button) => {
+  button.addEventListener("click", async () => {
+    const shipmentId = button.dataset.shipmentId;
 
+    const confirmed = window.confirm(
+      "¿Querés dejar de seguir este envío?"
+    );
+
+    if (!confirmed) return;
+
+    button.disabled = true;
+    button.textContent = "Quitando...";
+
+    const { error } = await supabaseClient
+      .from("followed_shipments")
+      .delete()
+      .eq("id", shipmentId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error(error);
+      alert("No pudimos dejar de seguir este envío.");
+
+      button.disabled = false;
+      button.textContent = "Dejar de seguir";
+      return;
+    }
+
+    await loadMyShipments();
+  });
+});
 
 list.onclick = async (event) => {
   const button = event.target.closest(".edit-reference-btn");
