@@ -2735,7 +2735,10 @@ async function loadMyShipments() {
       shipment.notifications_enabled ? "🔔" : "";
 
     return `
-      <div class="shipment-card">
+      <div
+  class="shipment-card"
+  data-status="${safeShipmentText(shipment.current_status || "")}"
+>
 
         <div class="shipment-info">
          <span class="shipment-name">
@@ -2932,6 +2935,60 @@ list.onclick = async (event) => {
 
 
 loadMyShipments();
+  document.querySelectorAll(".shipment-filter").forEach((filterButton) => {
+  filterButton.addEventListener("click", () => {
+
+    document.querySelectorAll(".shipment-filter").forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    filterButton.classList.add("active");
+
+    const filter = filterButton.dataset.filter;
+
+    document.querySelectorAll(".shipment-card").forEach((card) => {
+      const status = (card.dataset.status || "").toLowerCase();
+
+      let show = false;
+
+      if (filter === "all") {
+        show = true;
+      }
+
+      if (filter === "active") {
+        show = [
+          "pending",
+          "pendiente",
+          "inforeceived",
+          "intransit",
+          "en tránsito",
+          "outfordelivery",
+          "en reparto",
+          "availableforpickup"
+        ].includes(status);
+      }
+
+      if (filter === "delivered") {
+        show = [
+          "delivered",
+          "entregado"
+        ].includes(status);
+      }
+
+      if (filter === "attention") {
+        show = [
+          "exception",
+          "attemptfail",
+          "expired",
+          "requiere atención"
+        ].includes(status);
+      }
+
+      card.style.display = show ? "" : "none";
+    });
+
+  });
+});
 
 supabaseClient.auth.onAuthStateChange(() => {
   setTimeout(() => {
