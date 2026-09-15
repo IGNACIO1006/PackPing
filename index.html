@@ -1188,6 +1188,54 @@ body
   border-color:#2F66E8;
   color:#fff;
 }
+    .user-menu{
+  display:none;
+  position:fixed;
+  z-index:10000;
+  width:190px;
+  padding:8px;
+  background:#fff;
+  border:1px solid #DCE3EE;
+  border-radius:12px;
+  box-shadow:0 15px 40px rgba(15,32,64,.16);
+}
+
+.user-menu.open{
+  display:block;
+}
+
+.user-menu-name{
+  padding:9px 10px 10px;
+  margin-bottom:4px;
+  border-bottom:1px solid #EEF2F7;
+  color:#0F2040;
+  font-size:13px;
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.user-menu button{
+  width:100%;
+  border:0;
+  background:transparent;
+  border-radius:7px;
+  padding:9px 10px;
+  text-align:left;
+  color:#334155;
+  font:inherit;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.user-menu button:hover{
+  background:#F1F5F9;
+}
+
+.user-menu .user-menu-logout{
+  color:#DC2626;
+}
 </style>
 </head>
 <body>
@@ -2402,6 +2450,41 @@ const googleLoginBtn = document.getElementById("googleLoginBtn");
 const emailLoginForm = document.getElementById("emailLoginForm");
 const registerBtn = document.getElementById("registerBtn");
 const loginMessage = document.getElementById("loginMessage");
+  let currentPackPingUser = null;
+
+const userMenu = document.createElement("div");
+userMenu.className = "user-menu";
+userMenu.innerHTML = `
+  <div class="user-menu-name" id="userMenuName"></div>
+
+  <button type="button" id="userMenuShipments">
+    Mis envíos
+  </button>
+
+  <button type="button" id="userMenuLogout" class="user-menu-logout">
+    Cerrar sesión
+  </button>
+`;
+
+document.body.appendChild(userMenu);
+
+const userMenuName = document.getElementById("userMenuName");
+const userMenuShipments = document.getElementById("userMenuShipments");
+const userMenuLogout = document.getElementById("userMenuLogout");
+
+function closeUserMenu() {
+  userMenu.classList.remove("open");
+}
+
+function openUserMenu() {
+  const rect = loginBtn.getBoundingClientRect();
+
+  userMenu.style.top = `${rect.bottom + 8}px`;
+  userMenu.style.right = `${window.innerWidth - rect.right}px`;
+
+  userMenu.classList.add("open");
+}
+  
   const referenceModal = document.getElementById("referenceModal");
 const referenceOverlay = document.getElementById("referenceOverlay");
 const referenceClose = document.getElementById("referenceClose");
@@ -2486,10 +2569,13 @@ function closeLogin() {
 }
 
 function showUser(session) {
-  const user = session?.user;
+  const user = session?.user || null;
+
+  currentPackPingUser = user;
 
   if (!user) {
     loginBtn.textContent = "Iniciar sesión";
+    closeUserMenu();
     return;
   }
 
@@ -2500,16 +2586,71 @@ function showUser(session) {
     "Mi cuenta";
 
   loginBtn.textContent = `👤 ${name}`;
+  userMenuName.textContent = name;
+
   closeLogin();
 }
 
 
-// ABRIR LOGIN
+// LOGIN / MENU DE USUARIO
 loginBtn.addEventListener("click", (e) => {
   e.preventDefault();
+
+  if (currentPackPingUser) {
+    if (userMenu.classList.contains("open")) {
+      closeUserMenu();
+    } else {
+      openUserMenu();
+    }
+
+    return;
+  }
+
   openLogin();
 });
 
+  userMenuShipments.addEventListener("click", () => {
+  closeUserMenu();
+
+  document.getElementById("mis-envios")?.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+});
+
+userMenuLogout.addEventListener("click", async () => {
+  userMenuLogout.disabled = true;
+  userMenuLogout.textContent = "Cerrando sesión...";
+
+  const { error } = await supabaseClient.auth.signOut();
+
+  userMenuLogout.disabled = false;
+  userMenuLogout.textContent = "Cerrar sesión";
+
+  if (error) {
+    console.error(error);
+    alert("No pudimos cerrar la sesión.");
+    return;
+  }
+
+  currentPackPingUser = null;
+  loginBtn.textContent = "Iniciar sesión";
+  closeUserMenu();
+
+  if (typeof loadMyShipments === "function") {
+    loadMyShipments();
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (
+    !userMenu.contains(e.target) &&
+    e.target !== loginBtn
+  ) {
+    closeUserMenu();
+  }
+});
+  
 loginClose.addEventListener("click", closeLogin);
 loginOverlay.addEventListener("click", closeLogin);
 
