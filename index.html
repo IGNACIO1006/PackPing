@@ -3012,9 +3012,13 @@ ${
       block: "center"
     });
 
-    setTimeout(() => {
-      trackingForm.requestSubmit();
-    }, 500);
+   setTimeout(() => {
+  const submitBtn = trackingForm.querySelector('button[type="submit"]');
+
+  if (submitBtn) {
+    submitBtn.click();
+  }
+}, 500);
   });
 });
 document.querySelectorAll(".unfollow-shipment-btn").forEach((button) => {
