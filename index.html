@@ -2997,20 +2997,36 @@ ${
     `;
   }).join("");
  document.querySelectorAll(".view-shipment-btn").forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
     const trackingNumber = button.dataset.tracking;
 
     const trackingInput = document.getElementById("trackingNumber");
     const carrierSelect = document.getElementById("carrier");
     const trackingForm = document.getElementById("trackForm");
 
+    if (!trackingInput || !carrierSelect || !trackingForm) {
+      console.error("No se encontró el formulario de rastreo.");
+      return;
+    }
+
     trackingInput.value = trackingNumber;
     carrierSelect.value = "auto";
 
-    document.getElementById("buscar").scrollIntoView({
+    document.getElementById("buscar")?.scrollIntoView({
       behavior: "smooth",
       block: "center"
     });
+
+    trackingForm.dispatchEvent(
+      new Event("submit", {
+        bubbles: true,
+        cancelable: true
+      })
+    );
+  });
+});
 
    setTimeout(() => {
   const submitBtn = trackingForm.querySelector('button[type="submit"]');
