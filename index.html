@@ -2614,6 +2614,83 @@ referenceInlineSaveBtn.addEventListener("click", async () => {
 }
 
 });
+  function safeReviewText(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+async function loadPublicReviews() {
+  const reviewsList = document.getElementById("reviewsList");
+  const reviewsAverage = document.getElementById("reviewsAverage");
+  const reviewsStars = document.getElementById("reviewsStars");
+  const reviewsCount = document.getElementById("reviewsCount");
+
+  const { data: reviews, error } = await supabaseClient
+    .from("reviews")
+    .select("id, display_name, rating, comment, created_at")
+    .eq("approved", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error cargando reseñas:", error);
+    return;
+  }
+
+  if (!reviews || reviews.length === 0) {
+    reviewsAverage.textContent = "—";
+    reviewsStars.textContent = "☆☆☆☆☆";
+    reviewsCount.textContent = "Todavía no hay reseñas";
+
+    reviewsList.innerHTML = `
+      <div class="reviews-empty">
+        Todavía no hay reseñas publicadas.
+      </div>
+    `;
+
+    return;
+  }
+
+  const average =
+    reviews.reduce((total, review) => total + review.rating, 0) /
+    reviews.length;
+
+  reviewsAverage.textContent =
+    average.toFixed(1).replace(".", ",");
+
+  const roundedAverage = Math.round(average);
+
+  reviewsStars.textContent =
+    "★".repeat(roundedAverage) +
+    "☆".repeat(5 - roundedAverage);
+
+  reviewsCount.textContent =
+    reviews.length === 1
+      ? "1 reseña"
+      : `${reviews.length} reseñas`;
+
+  reviewsList.innerHTML = reviews.map((review) => `
+    <article class="review-card">
+
+      <div class="review-card-stars">
+        ${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}
+      </div>
+
+      <div class="review-card-comment">
+        “${safeReviewText(review.comment)}”
+      </div>
+
+      <div class="review-card-name">
+        ${safeReviewText(review.display_name || "Usuario PackPing")}
+      </div>
+
+    </article>
+  `).join("");
+}
+
+loadPublicReviews();
 </script>
 
 <script>
