@@ -1485,6 +1485,110 @@ body
   font-size:12px;
   color:#64748B;
 }
+ /* TRACKING DE CONTENEDORES */
+
+.container-tracking-section{
+  padding:72px 0;
+  background:#fff;
+}
+
+.container-tracking-card{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:45px;
+  align-items:center;
+  padding:34px;
+  border:1px solid #DCE3EE;
+  border-radius:18px;
+  background:#F8FAFD;
+}
+
+.container-tag{
+  display:inline-block;
+  margin-bottom:10px;
+  color:#2F66E8;
+  font-size:13px;
+  font-weight:700;
+}
+
+.container-tracking-copy h2{
+  margin:0 0 12px;
+  font-size:30px;
+  color:#0F2040;
+}
+
+.container-tracking-copy p{
+  margin:0;
+  max-width:500px;
+  color:#64748B;
+  line-height:1.6;
+}
+
+.container-form{
+  padding:22px;
+  background:#fff;
+  border:1px solid #DCE3EE;
+  border-radius:14px;
+}
+
+.container-form .field{
+  margin-bottom:14px;
+}
+
+.container-form label{
+  display:block;
+  margin-bottom:6px;
+  color:#334155;
+  font-size:13px;
+  font-weight:600;
+}
+
+.container-form input{
+  width:100%;
+  padding:12px 13px;
+  border:1px solid #DCE3EE;
+  border-radius:9px;
+  font:inherit;
+  box-sizing:border-box;
+  outline:none;
+}
+
+.container-form input:focus{
+  border-color:#2F66E8;
+  box-shadow:0 0 0 3px rgba(47,102,232,.10);
+}
+
+.container-form button{
+  width:100%;
+}
+
+.container-form-help{
+  margin:10px 0 0;
+  text-align:center;
+  color:#94A3B8;
+  font-size:12px;
+}
+
+.container-result{
+  display:none;
+  margin-top:18px;
+}
+
+.container-result.show{
+  display:block;
+}
+
+@media(max-width:760px){
+  .container-tracking-card{
+    grid-template-columns:1fr;
+    gap:24px;
+    padding:22px;
+  }
+
+  .container-tracking-copy h2{
+    font-size:26px;
+  }
+}   
 </style>
 </head>
 <body>
@@ -1576,7 +1680,61 @@ body
       </div>
     </div>
   </section>
+<section class="container-tracking-section scroll-animate" id="contenedores">
+  <div class="wrap">
 
+    <div class="container-tracking-card">
+
+      <div class="container-tracking-copy">
+        <span class="container-tag">🚢 Seguimiento marítimo</span>
+
+        <h2>Rastrear contenedor</h2>
+
+        <p>
+          Consultá el recorrido de tus contenedores marítimos desde un solo lugar.
+          Podrás ver naviera, buque, puertos, ETA y movimientos disponibles.
+        </p>
+      </div>
+
+      <form id="containerForm" class="container-form">
+
+        <div class="field">
+          <label for="containerNumber">
+            Número de contenedor
+          </label>
+
+          <input
+            id="containerNumber"
+            type="text"
+            maxlength="11"
+            placeholder="Ej: MSKU1234567"
+            autocomplete="off"
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="btn primary"
+          id="containerSubmitBtn"
+        >
+          Rastrear contenedor
+        </button>
+
+        <p class="container-form-help">
+          Ingresá las 4 letras y 7 números del contenedor.
+        </p>
+
+      </form>
+
+    </div>
+
+    <div
+      class="container-result"
+      id="containerResult"
+    ></div>
+
+  </div>
+</section>
   <section class="steps scroll-animate" id="como-funciona">
     <div class="wrap">
       <div class="section-head">
