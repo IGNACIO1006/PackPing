@@ -3579,6 +3579,88 @@ supabaseClient.auth.onAuthStateChange(() => {
   reviewComment.addEventListener("input", () => {
     reviewCharCount.textContent = reviewComment.value.length;
   });
+    reviewSubmitBtn.addEventListener("click", async () => {
+
+  reviewMessage.textContent = "";
+
+  if (selectedReviewRating === 0) {
+    reviewMessage.textContent = "Elegí una puntuación de 1 a 5 estrellas.";
+    return;
+  }
+
+  const comment = reviewComment.value.trim();
+
+  if (comment.length < 3) {
+    reviewMessage.textContent = "Escribí un comentario antes de enviar.";
+    return;
+  }
+
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    closeReviewModal();
+    loginMessage.textContent = "Iniciá sesión para dejar una reseña.";
+    openLogin();
+    return;
+  }
+
+  const displayName =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "Usuario PackPing";
+
+  reviewSubmitBtn.disabled = true;
+  reviewSubmitBtn.textContent = "Enviando...";
+
+  const { error } = await supabaseClient
+    .from("reviews")
+    .upsert(
+      {
+        user_id: user.id,
+        display_name: displayName,
+        rating: selectedReviewRating,
+        comment: comment,
+        approved: false,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: "user_id"
+      }
+    );
+
+  reviewSubmitBtn.disabled = false;
+  reviewSubmitBtn.textContent = "Enviar reseña";
+
+  if (error) {
+    console.error("Error guardando reseña:", error);
+    reviewMessage.textContent =
+      "No pudimos guardar tu reseña. Intentá nuevamente.";
+    return;
+  }
+
+  reviewMessage.style.color = "#16A34A";
+  reviewMessage.textContent =
+    "¡Gracias! Tu reseña fue enviada y está pendiente de aprobación.";
+
+  reviewComment.value = "";
+  reviewCharCount.textContent = "0";
+  selectedReviewRating = 0;
+
+  ratingButtons.forEach((star) => {
+    star.textContent = "☆";
+    star.classList.remove("active");
+  });
+
+  setTimeout(() => {
+    closeReviewModal();
+    reviewMessage.style.color = "";
+    reviewMessage.textContent = "";
+  }, 1800);
+
+});
 </script>
   
 </body>
