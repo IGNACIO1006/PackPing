@@ -1355,6 +1355,136 @@ body
     grid-template-columns:1fr;
   }
 }
+    /* MODAL RESEÑAS */
+
+.review-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.review-modal.open{
+  display:flex;
+}
+
+.review-modal-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(15,32,64,.45);
+  backdrop-filter:blur(5px);
+}
+
+.review-modal-box{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:440px;
+  background:#fff;
+  border-radius:18px;
+  padding:26px;
+  box-shadow:0 25px 70px rgba(15,32,64,.22);
+}
+
+.review-modal-box h3{
+  margin:0 0 6px;
+  font-size:21px;
+  color:#0F2040;
+}
+
+.review-modal-subtitle{
+  margin:0 0 22px;
+  color:#64748B;
+  font-size:14px;
+}
+
+.review-modal-box label{
+  display:block;
+  margin:14px 0 7px;
+  font-size:13px;
+  font-weight:700;
+  color:#334155;
+}
+
+.review-rating{
+  display:flex;
+  gap:5px;
+}
+
+.review-rating button{
+  border:0;
+  background:transparent;
+  color:#F59E0B;
+  font-size:32px;
+  line-height:1;
+  padding:2px;
+  cursor:pointer;
+}
+
+.review-rating button.active{
+  transform:scale(1.08);
+}
+
+.review-modal-box textarea{
+  width:100%;
+  min-height:120px;
+  resize:vertical;
+  padding:12px;
+  border:1.5px solid #DCE3EE;
+  border-radius:10px;
+  font:inherit;
+  outline:none;
+}
+
+.review-modal-box textarea:focus{
+  border-color:#2F66E8;
+  box-shadow:0 0 0 3px rgba(47,102,232,.10);
+}
+
+.review-char-count{
+  margin-top:5px;
+  text-align:right;
+  color:#94A3B8;
+  font-size:11px;
+}
+
+.review-submit-btn{
+  width:100%;
+  margin-top:16px;
+  border:0;
+  border-radius:10px;
+  padding:12px;
+  background:#2F66E8;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.review-submit-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.review-modal-close{
+  position:absolute;
+  top:11px;
+  right:14px;
+  border:0;
+  background:transparent;
+  color:#94A3B8;
+  font-size:26px;
+  cursor:pointer;
+}
+
+.review-message{
+  min-height:18px;
+  margin-top:10px;
+  font-size:12px;
+  color:#64748B;
+}
 </style>
 </head>
 <body>
@@ -3329,7 +3459,128 @@ supabaseClient.auth.onAuthStateChange(() => {
 });
       
 </script>
+<!-- MODAL RESEÑA -->
+<div class="review-modal" id="reviewModal">
 
+  <div class="review-modal-overlay" id="reviewModalOverlay"></div>
+
+  <div class="review-modal-box">
+
+    <button
+      type="button"
+      class="review-modal-close"
+      id="reviewModalClose"
+      aria-label="Cerrar"
+    >
+      ×
+    </button>
+
+    <h3>Dejá tu reseña</h3>
+
+    <p class="review-modal-subtitle">
+      Contanos qué te pareció usar PackPing.
+    </p>
+
+    <label>Tu puntuación</label>
+
+    <div class="review-rating" id="reviewRating">
+      <button type="button" data-rating="1">☆</button>
+      <button type="button" data-rating="2">☆</button>
+      <button type="button" data-rating="3">☆</button>
+      <button type="button" data-rating="4">☆</button>
+      <button type="button" data-rating="5">☆</button>
+    </div>
+
+    <label for="reviewComment">
+      Tu comentario
+    </label>
+
+    <textarea
+      id="reviewComment"
+      maxlength="500"
+      placeholder="Ej: Me resultó muy práctico para seguir mis pedidos..."
+    ></textarea>
+
+    <div class="review-char-count">
+      <span id="reviewCharCount">0</span>/500
+    </div>
+
+    <p class="review-message" id="reviewMessage"></p>
+
+    <button
+      type="button"
+      class="review-submit-btn"
+      id="reviewSubmitBtn"
+    >
+      Enviar reseña
+    </button>
+
+  </div>
+
+</div>
+  <script>
+  const leaveReviewBtn = document.getElementById("leaveReviewBtn");
+  const reviewModal = document.getElementById("reviewModal");
+  const reviewModalOverlay = document.getElementById("reviewModalOverlay");
+  const reviewModalClose = document.getElementById("reviewModalClose");
+  const reviewComment = document.getElementById("reviewComment");
+  const reviewCharCount = document.getElementById("reviewCharCount");
+  const reviewMessage = document.getElementById("reviewMessage");
+  const reviewSubmitBtn = document.getElementById("reviewSubmitBtn");
+  const ratingButtons = document.querySelectorAll("#reviewRating button");
+
+  let selectedReviewRating = 0;
+
+  function openReviewModal() {
+    reviewModal.classList.add("open");
+    reviewMessage.textContent = "";
+  }
+
+  function closeReviewModal() {
+    reviewModal.classList.remove("open");
+  }
+
+  leaveReviewBtn.addEventListener("click", async () => {
+    const {
+      data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+      loginMessage.textContent =
+        "Iniciá sesión para dejar una reseña.";
+      openLogin();
+      return;
+    }
+
+    openReviewModal();
+  });
+
+  reviewModalClose.addEventListener("click", closeReviewModal);
+  reviewModalOverlay.addEventListener("click", closeReviewModal);
+
+  ratingButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedReviewRating = Number(button.dataset.rating);
+
+      ratingButtons.forEach((star) => {
+        const starValue = Number(star.dataset.rating);
+
+        star.textContent =
+          starValue <= selectedReviewRating ? "★" : "☆";
+
+        star.classList.toggle(
+          "active",
+          starValue <= selectedReviewRating
+        );
+      });
+    });
+  });
+
+  reviewComment.addEventListener("input", () => {
+    reviewCharCount.textContent = reviewComment.value.length;
+  });
+</script>
+  
 </body>
 </html>
 
