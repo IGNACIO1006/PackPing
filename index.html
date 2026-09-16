@@ -2690,7 +2690,9 @@ async function loadPublicReviews() {
   `).join("");
 }
 
-loadPublicReviews();
+window.addEventListener("load", () => {
+  loadPublicReviews();
+});
 </script>
 
 <script>
@@ -3730,6 +3732,7 @@ supabaseClient.auth.onAuthStateChange(() => {
     star.textContent = "☆";
     star.classList.remove("active");
   });
+      await loadPublicReviews();
 
   setTimeout(() => {
     closeReviewModal();
