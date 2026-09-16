@@ -1241,6 +1241,120 @@ body
   font-size:12px;
   color:#94a3b8;
 }
+    /* RESEÑAS REALES */
+
+.reviews-section{
+  padding:72px 0;
+  background:#F6F8FC;
+}
+
+.reviews-summary{
+  margin-top:28px;
+  padding:22px;
+  background:#fff;
+  border:1px solid #DCE3EE;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  box-shadow:0 10px 28px rgba(15,32,64,.05);
+}
+
+.reviews-average{
+  font-size:32px;
+  line-height:1;
+  font-weight:800;
+  color:#0F2040;
+}
+
+.reviews-stars{
+  margin-top:7px;
+  font-size:20px;
+  letter-spacing:2px;
+  color:#F59E0B;
+}
+
+.reviews-count{
+  margin-top:5px;
+  color:#64748B;
+  font-size:13px;
+}
+
+.leave-review-btn{
+  border:0;
+  border-radius:10px;
+  padding:11px 16px;
+  background:#2F66E8;
+  color:#fff;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.leave-review-btn:hover{
+  transform:translateY(-1px);
+  background:#2559D6;
+}
+
+.reviews-list{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:18px;
+}
+
+.review-card{
+  background:#fff;
+  border:1px solid #DCE3EE;
+  border-radius:14px;
+  padding:18px;
+}
+
+.review-card-stars{
+  color:#F59E0B;
+  letter-spacing:1px;
+  margin-bottom:10px;
+}
+
+.review-card-comment{
+  color:#475569;
+  font-size:14px;
+  line-height:1.55;
+}
+
+.review-card-name{
+  margin-top:14px;
+  color:#0F2040;
+  font-size:13px;
+  font-weight:700;
+}
+
+.reviews-empty{
+  grid-column:1 / -1;
+  padding:22px;
+  text-align:center;
+  color:#94A3B8;
+  background:#fff;
+  border:1px dashed #DCE3EE;
+  border-radius:14px;
+}
+
+@media(max-width:760px){
+  .reviews-summary{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .leave-review-btn{
+    width:100%;
+  }
+
+  .reviews-list{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
 <body>
@@ -1448,7 +1562,42 @@ body
 
  
        
+<section class="reviews-section scroll-animate" id="resenas">
+  <div class="wrap">
 
+    <div class="section-head">
+      <h2>Lo que opinan sobre PackPing</h2>
+      <p>
+        Experiencias reales de personas que utilizan PackPing para seguir sus envíos.
+      </p>
+    </div>
+
+    <div class="reviews-summary">
+      <div>
+        <div class="reviews-average" id="reviewsAverage">—</div>
+        <div class="reviews-stars" id="reviewsStars">☆☆☆☆☆</div>
+        <div class="reviews-count" id="reviewsCount">
+          Todavía no hay reseñas
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="leave-review-btn"
+        id="leaveReviewBtn"
+      >
+        ⭐ Dejar una reseña
+      </button>
+    </div>
+
+    <div class="reviews-list" id="reviewsList">
+      <div class="reviews-empty">
+        Todavía no hay reseñas publicadas.
+      </div>
+    </div>
+
+  </div>
+</section>
   <section class="faq faq-section scroll-animate">
     <div class="wrap">
       <div class="section-head">
