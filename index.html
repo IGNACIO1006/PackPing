@@ -3028,15 +3028,7 @@ ${
   });
 });
 
-   setTimeout(() => {
-  const submitBtn = trackingForm.querySelector('button[type="submit"]');
-
-  if (submitBtn) {
-    submitBtn.click();
-  }
-}, 500);
-  });
-});
+  
 document.querySelectorAll(".unfollow-shipment-btn").forEach((button) => {
   button.addEventListener("click", async () => {
     const shipmentId = button.dataset.shipmentId;
