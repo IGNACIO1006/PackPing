@@ -1641,6 +1641,151 @@ body
     padding:22px;
   }
 }
+   /* RESULTADO CONTENEDOR */
+
+.container-summary-card{
+  background:#fff;
+  border:1px solid #DCE3EE;
+  border-radius:16px;
+  padding:20px;
+}
+
+.container-overline{
+  margin-bottom:15px;
+  color:#8292AC;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+.container-result-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.container-result-carrier{
+  color:#0F2040;
+  font-size:18px;
+  font-weight:800;
+}
+
+.container-result-number{
+  margin-top:5px;
+  color:#8292AC;
+  font-size:13px;
+}
+
+.container-status-pill{
+  padding:7px 11px;
+  border-radius:999px;
+  background:#EEF4FF;
+  color:#2F66E8;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.container-status-pill.finished{
+  background:#E9F9EF;
+  color:#168447;
+}
+
+.container-status-pill.warning{
+  background:#FFF4E5;
+  color:#B76A00;
+}
+
+.container-route-box{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-top:18px;
+  padding:14px;
+  border:1px solid #DCE3EE;
+  border-radius:11px;
+  background:#F8FAFD;
+  color:#0F2040;
+  font-size:13px;
+  font-weight:600;
+}
+
+.container-details-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+.container-detail{
+  padding:12px;
+  border:1px solid #E5EAF2;
+  border-radius:10px;
+}
+
+.container-detail-label{
+  color:#94A3B8;
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+}
+
+.container-detail-value{
+  margin-top:4px;
+  color:#0F2040;
+  font-size:13px;
+  font-weight:600;
+}
+
+.container-processing{
+  padding:18px;
+  background:#EEF4FF;
+  border:1px solid #D5E1FF;
+  border-radius:12px;
+  color:#334155;
+  font-size:13px;
+  line-height:1.6;
+}
+
+.container-error{
+  padding:18px;
+  background:#FFF4F4;
+  border:1px solid #FFD7D7;
+  border-radius:12px;
+  color:#B42318;
+  font-size:13px;
+}
+
+@media(max-width:600px){
+  .container-details-grid{
+    grid-template-columns:1fr;
+  }
+
+  .container-result-header{
+    flex-direction:column;
+  }
+} 
+    .container-search-card select{
+  width:100%;
+  box-sizing:border-box;
+  padding:14px 15px;
+  border:1px solid #DCE3EE;
+  border-radius:9px;
+  background:#F8FAFD;
+  color:#0F2040;
+  font:inherit;
+  font-size:15px;
+  outline:none;
+}
+
+.container-search-card select:focus{
+  border-color:#2F66E8;
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(47,102,232,.10);
+}
 </style>
 </head>
 <body>
@@ -1759,35 +1904,84 @@ body
 
     <div class="container-search-card">
 
-      <form id="containerForm">
+<form id="containerForm">
 
-        <div class="field">
-          <label for="containerNumber">
-            Número de contenedor
-          </label>
+  <div class="field">
+    <label for="containerNumber">
+      Número de contenedor
+    </label>
 
-          <input
-            id="containerNumber"
-            type="text"
-            maxlength="11"
-            placeholder="Ej: MSKU1234567"
-            autocomplete="off"
-          >
-        </div>
+    <input
+      id="containerNumber"
+      type="text"
+      maxlength="11"
+      placeholder="Ej: MSKU1234567"
+      autocomplete="off"
+    >
+  </div>
 
-        <button
-          type="submit"
-          class="container-track-btn"
-          id="containerSubmitBtn"
-        >
-          Rastrear contenedor
-        </button>
 
-        <p class="container-form-help">
-          Ingresá las 4 letras y 7 números del contenedor.
-        </p>
+  <div class="field">
+    <label for="containerCarrier">
+      Naviera
+    </label>
 
-      </form>
+    <select id="containerCarrier">
+
+      <option value="">
+        Seleccionar naviera
+      </option>
+
+      <option value="maersk">Maersk</option>
+      <option value="msc">MSC</option>
+      <option value="cma-cgm">CMA CGM</option>
+      <option value="hapag-lloyd">Hapag-Lloyd</option>
+      <option value="one">ONE - Ocean Network Express</option>
+
+      <option value="cosco">COSCO Shipping</option>
+      <option value="evergreen">Evergreen Marine</option>
+      <option value="oocl">OOCL</option>
+      <option value="yang-ming">Yang Ming</option>
+      <option value="zim">ZIM</option>
+
+      <option value="hmm">HMM</option>
+      <option value="pil">PIL - Pacific International Lines</option>
+      <option value="wan-hai">Wan Hai Lines</option>
+      <option value="sitc">SITC</option>
+      <option value="sm-line">SM Line</option>
+
+      <option value="seaboard">Seaboard Marine</option>
+      <option value="crowley">Crowley</option>
+      <option value="matson">Matson</option>
+      <option value="turkon">Turkon Line</option>
+      <option value="arkas">Arkas Line</option>
+
+      <option value="grimaldi">Grimaldi Lines</option>
+      <option value="acl">Atlantic Container Line - ACL</option>
+      <option value="swire">Swire Shipping</option>
+      <option value="gold-star">Gold Star Line</option>
+
+      <option value="other">
+        Otra / No sé cuál
+      </option>
+
+    </select>
+  </div>
+
+
+  <button
+    type="submit"
+    class="container-track-btn"
+    id="containerSubmitBtn"
+  >
+    Rastrear contenedor
+  </button>
+
+  <p class="container-form-help">
+    Ingresá las 4 letras y 7 números del contenedor.
+  </p>
+
+</form>
 
 
       <div
@@ -3965,7 +4159,420 @@ supabaseClient.auth.onAuthStateChange(() => {
 
 });
 </script>
-  
+ <script>
+(() => {
+
+  const containerForm = document.getElementById("containerForm");
+  const containerInput = document.getElementById("containerNumber");
+  const containerSubmitBtn = document.getElementById("containerSubmitBtn");
+  const containerResult = document.getElementById("containerResult");
+
+  if (!containerForm) return;
+
+
+  function containerEsc(value = "") {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+
+  function findContainerValue(source, possibleKeys) {
+
+    if (!source || typeof source !== "object") {
+      return "";
+    }
+
+    const wanted = possibleKeys.map(key =>
+      key.toLowerCase()
+    );
+
+    const queue = [source];
+    const visited = new Set();
+
+    while (queue.length) {
+
+      const current = queue.shift();
+
+      if (
+        !current ||
+        typeof current !== "object" ||
+        visited.has(current)
+      ) {
+        continue;
+      }
+
+      visited.add(current);
+
+      for (const [key, value] of Object.entries(current)) {
+
+        if (
+          wanted.includes(key.toLowerCase()) &&
+          value !== null &&
+          value !== "" &&
+          typeof value !== "object"
+        ) {
+          return String(value);
+        }
+      }
+
+      Object.values(current).forEach(value => {
+        if (value && typeof value === "object") {
+          queue.push(value);
+        }
+      });
+    }
+
+    return "";
+  }
+
+
+  function containerStatusName(status = "") {
+
+    const names = {
+      InProgress: "Procesando",
+      Booked: "Reservado",
+      Loaded: "Cargado en buque",
+      Sailing: "En navegación",
+      Arrived: "Llegó a destino",
+      Discharged: "Descargado",
+      Untracked: "No rastreable"
+    };
+
+    return names[status] || status || "Seguimiento activo";
+  }
+
+
+  function renderContainerData(payload, containerNumber) {
+
+    let data = payload?.data;
+
+    if (typeof data === "string") {
+      try {
+        data = JSON.parse(data);
+      } catch {
+        data = {};
+      }
+    }
+
+    if (Array.isArray(data)) {
+      data = data[0] || {};
+    }
+
+    data = data || {};
+
+
+    const statusRaw = findContainerValue(
+      data,
+      ["Status", "status", "StatusName", "statusName"]
+    );
+
+    const status = containerStatusName(statusRaw);
+
+
+    const carrier = findContainerValue(
+      data,
+      [
+        "ShippingLine",
+        "shippingLine",
+        "Carrier",
+        "carrier"
+      ]
+    );
+
+
+    const origin = findContainerValue(
+      data,
+      [
+        "POL",
+        "Pol",
+        "PortOfLoading",
+        "LoadingPort",
+        "Origin"
+      ]
+    );
+
+
+    const destination = findContainerValue(
+      data,
+      [
+        "POD",
+        "Pod",
+        "PortOfDischarge",
+        "DischargePort",
+        "Destination"
+      ]
+    );
+
+
+    const eta = findContainerValue(
+      data,
+      [
+        "ETA",
+        "Eta",
+        "eta",
+        "EstimatedArrival",
+        "ArrivalDate"
+      ]
+    );
+
+
+    const vessel = findContainerValue(
+      data,
+      [
+        "Vessel",
+        "VesselName",
+        "vessel",
+        "vesselName"
+      ]
+    );
+
+
+    const voyage = findContainerValue(
+      data,
+      [
+        "Voyage",
+        "VoyageNo",
+        "VoyageNumber",
+        "voyage"
+      ]
+    );
+
+
+    let statusClass = "";
+
+    if (
+      statusRaw === "Arrived" ||
+      statusRaw === "Discharged"
+    ) {
+      statusClass = "finished";
+    }
+
+    if (statusRaw === "Untracked") {
+      statusClass = "warning";
+    }
+
+
+    containerResult.innerHTML = `
+      <div class="container-summary-card">
+
+        <div class="container-overline">
+          Seguimiento marítimo
+        </div>
+
+        <div class="container-result-header">
+
+          <div>
+            <div class="container-result-carrier">
+              ${containerEsc(carrier || "Contenedor marítimo")}
+            </div>
+
+            <div class="container-result-number">
+              ${containerEsc(containerNumber)}
+            </div>
+          </div>
+
+          <span class="container-status-pill ${statusClass}">
+            ${containerEsc(status)}
+          </span>
+
+        </div>
+
+
+        ${
+          origin || destination
+            ? `
+              <div class="container-route-box">
+                <span>${containerEsc(origin || "Origen")}</span>
+                <span>→</span>
+                <span>${containerEsc(destination || "Destino")}</span>
+              </div>
+            `
+            : ""
+        }
+
+
+        <div class="container-details-grid">
+
+          ${
+            eta
+              ? `
+                <div class="container-detail">
+                  <div class="container-detail-label">
+                    Llegada estimada
+                  </div>
+                  <div class="container-detail-value">
+                    ${containerEsc(eta)}
+                  </div>
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            vessel
+              ? `
+                <div class="container-detail">
+                  <div class="container-detail-label">
+                    Buque
+                  </div>
+                  <div class="container-detail-value">
+                    ${containerEsc(vessel)}
+                  </div>
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            voyage
+              ? `
+                <div class="container-detail">
+                  <div class="container-detail-label">
+                    Viaje
+                  </div>
+                  <div class="container-detail-value">
+                    ${containerEsc(voyage)}
+                  </div>
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+
+      </div>
+    `;
+
+    containerResult.classList.add("show");
+  }
+
+
+  containerForm.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    const containerNumber = containerInput.value
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+
+    if (!/^[A-Z]{4}[0-9]{7}$/.test(containerNumber)) {
+
+      containerResult.innerHTML = `
+        <div class="container-error">
+          Revisá el número del contenedor.
+          Debe tener 4 letras y 7 números.
+        </div>
+      `;
+
+      containerResult.classList.add("show");
+      return;
+    }
+
+
+    containerSubmitBtn.disabled = true;
+    containerSubmitBtn.textContent = "Buscando...";
+
+    containerResult.innerHTML = `
+      <div class="container-processing">
+        🚢 Consultando información del contenedor...
+      </div>
+    `;
+
+    containerResult.classList.add("show");
+
+
+    try {
+
+      const response = await fetch("/api/container-track", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          containerNumber,
+          shippingLine: "OTHERS"
+        })
+      });
+
+
+      const payload = await response.json();
+
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(
+          payload.error ||
+          "No pudimos consultar el contenedor"
+        );
+      }
+
+
+      if (payload.created || payload.processing) {
+
+        containerResult.innerHTML = `
+          <div class="container-processing">
+
+            <strong>🚢 Seguimiento iniciado</strong>
+
+            <br><br>
+
+            ${containerEsc(containerNumber)} fue agregado al sistema de seguimiento.
+
+            <br><br>
+
+            ShipsGo está obteniendo la información de la naviera.
+            Volvé a tocar <strong>Rastrear contenedor</strong>
+            dentro de unos minutos para ver el recorrido.
+
+          </div>
+        `;
+
+        containerResult.classList.add("show");
+
+        return;
+      }
+
+
+      renderContainerData(
+        payload,
+        containerNumber
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Error rastreando contenedor:",
+        error
+      );
+
+      containerResult.innerHTML = `
+        <div class="container-error">
+          ${containerEsc(
+            error.message ||
+            "No pudimos consultar este contenedor."
+          )}
+        </div>
+      `;
+
+      containerResult.classList.add("show");
+
+    } finally {
+
+      containerSubmitBtn.disabled = false;
+      containerSubmitBtn.textContent =
+        "Rastrear contenedor";
+
+    }
+
+  });
+
+})();
+</script> 
 </body>
 </html>
 
