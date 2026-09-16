@@ -1487,83 +1487,120 @@ body
 }
  /* TRACKING DE CONTENEDORES */
 
+/* TRACKING DE CONTENEDORES */
+
 .container-tracking-section{
-  padding:72px 0;
-  background:#fff;
+  padding:80px 0;
+  background:#F6F8FC;
+  border-top:1px solid #E5EAF2;
 }
 
-.container-tracking-card{
+.container-hero{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:45px;
-  align-items:center;
-  padding:34px;
-  border:1px solid #DCE3EE;
-  border-radius:18px;
-  background:#F8FAFD;
+  gap:70px;
+  align-items:start;
+}
+
+.container-hero-copy{
+  padding-top:18px;
 }
 
 .container-tag{
   display:inline-block;
-  margin-bottom:10px;
+  margin-bottom:14px;
   color:#2F66E8;
   font-size:13px;
   font-weight:700;
 }
 
-.container-tracking-copy h2{
-  margin:0 0 12px;
-  font-size:30px;
+.container-hero-copy h2{
+  margin:0 0 22px;
   color:#0F2040;
+  font-size:42px;
+  line-height:1.08;
+  letter-spacing:-1px;
 }
 
-.container-tracking-copy p{
+.container-lead{
   margin:0;
   max-width:500px;
-  color:#64748B;
+  color:#52627A;
+  font-size:17px;
   line-height:1.6;
 }
 
-.container-form{
-  padding:22px;
+.container-lead strong{
+  color:#0F2040;
+}
+
+
+.container-search-card{
   background:#fff;
   border:1px solid #DCE3EE;
-  border-radius:14px;
+  border-radius:18px;
+  padding:28px;
+  box-shadow:0 12px 35px rgba(15,32,64,.07);
 }
 
-.container-form .field{
-  margin-bottom:14px;
+.container-search-card .field{
+  margin-bottom:18px;
 }
 
-.container-form label{
+.container-search-card label{
   display:block;
-  margin-bottom:6px;
+  margin-bottom:7px;
   color:#334155;
   font-size:13px;
   font-weight:600;
 }
 
-.container-form input{
+.container-search-card input{
   width:100%;
-  padding:12px 13px;
+  box-sizing:border-box;
+  padding:14px 15px;
   border:1px solid #DCE3EE;
   border-radius:9px;
+  background:#F8FAFD;
+  color:#0F2040;
   font:inherit;
-  box-sizing:border-box;
+  font-size:15px;
   outline:none;
 }
 
-.container-form input:focus{
+.container-search-card input:focus{
   border-color:#2F66E8;
+  background:#fff;
   box-shadow:0 0 0 3px rgba(47,102,232,.10);
 }
 
-.container-form button{
+.container-track-btn{
   width:100%;
+  border:0;
+  border-radius:9px;
+  padding:14px;
+  background:#2F66E8;
+  color:#fff;
+  font:inherit;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.container-track-btn:hover{
+  background:#2559D6;
+  transform:translateY(-1px);
+}
+
+.container-track-btn:disabled{
+  opacity:.65;
+  cursor:not-allowed;
+  transform:none;
 }
 
 .container-form-help{
-  margin:10px 0 0;
+  margin:11px 0 0;
   text-align:center;
   color:#94A3B8;
   font-size:12px;
@@ -1571,24 +1608,39 @@ body
 
 .container-result{
   display:none;
-  margin-top:18px;
+  margin-top:22px;
+  padding-top:22px;
+  border-top:1px solid #E5EAF2;
 }
 
 .container-result.show{
   display:block;
 }
 
-@media(max-width:760px){
-  .container-tracking-card{
-    grid-template-columns:1fr;
-    gap:24px;
-    padding:22px;
+
+@media(max-width:860px){
+
+  .container-tracking-section{
+    padding:55px 0;
   }
 
-  .container-tracking-copy h2{
-    font-size:26px;
+  .container-hero{
+    grid-template-columns:1fr;
+    gap:30px;
   }
-}   
+
+  .container-hero-copy{
+    padding-top:0;
+  }
+
+  .container-hero-copy h2{
+    font-size:34px;
+  }
+
+  .container-search-card{
+    padding:22px;
+  }
+}
 </style>
 </head>
 <body>
@@ -1681,22 +1733,33 @@ body
     </div>
   </section>
 <section class="container-tracking-section scroll-animate" id="contenedores">
-  <div class="wrap">
 
-    <div class="container-tracking-card">
+  <div class="wrap container-hero">
 
-      <div class="container-tracking-copy">
-        <span class="container-tag">🚢 Seguimiento marítimo</span>
+    <div class="container-hero-copy">
 
-        <h2>Rastrear contenedor</h2>
+      <span class="container-tag">
+        🚢 Seguimiento marítimo
+      </span>
 
-        <p>
-          Consultá el recorrido de tus contenedores marítimos desde un solo lugar.
-          Podrás ver naviera, buque, puertos, ETA y movimientos disponibles.
-        </p>
-      </div>
+      <h2>
+        Rastrear contenedor
+        <br>
+        en tiempo real
+      </h2>
 
-      <form id="containerForm" class="container-form">
+      <p class="container-lead">
+        <strong>Todos tus contenedores. Un solo lugar.</strong><br>
+        Consultá su recorrido, naviera, buque, puertos,
+        ETA y movimientos disponibles.
+      </p>
+
+    </div>
+
+
+    <div class="container-search-card">
+
+      <form id="containerForm">
 
         <div class="field">
           <label for="containerNumber">
@@ -1714,7 +1777,7 @@ body
 
         <button
           type="submit"
-          class="btn primary"
+          class="container-track-btn"
           id="containerSubmitBtn"
         >
           Rastrear contenedor
@@ -1726,14 +1789,16 @@ body
 
       </form>
 
+
+      <div
+        class="container-result"
+        id="containerResult"
+      ></div>
+
     </div>
 
-    <div
-      class="container-result"
-      id="containerResult"
-    ></div>
-
   </div>
+
 </section>
   <section class="steps scroll-animate" id="como-funciona">
     <div class="wrap">
