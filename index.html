@@ -1786,6 +1786,105 @@ body
   background:#fff;
   box-shadow:0 0 0 3px rgba(47,102,232,.10);
 }
+    /* RESULTADO GRATUITO DE CONTENEDORES */
+
+.container-official-card{
+  background:#fff;
+  border:1px solid #DCE3EE;
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 8px 24px rgba(15,32,64,.05);
+}
+
+.container-official-overline{
+  color:#8292AC;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  margin-bottom:14px;
+}
+
+.container-official-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+}
+
+.container-official-carrier{
+  color:#0F2040;
+  font-size:18px;
+  font-weight:800;
+}
+
+.container-official-number{
+  margin-top:4px;
+  color:#8292AC;
+  font-size:13px;
+}
+
+.container-valid-pill{
+  padding:7px 11px;
+  border-radius:999px;
+  background:#E9F9EF;
+  color:#168447;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.container-official-info{
+  margin-top:18px;
+  padding:14px;
+  background:#F8FAFD;
+  border:1px solid #E5EAF2;
+  border-radius:11px;
+  color:#52627A;
+  font-size:13px;
+  line-height:1.55;
+}
+
+.container-official-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  box-sizing:border-box;
+  margin-top:14px;
+  padding:13px;
+  border:0;
+  border-radius:9px;
+  background:#2F66E8;
+  color:#fff;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.container-official-btn:hover{
+  background:#2559D6;
+  transform:translateY(-1px);
+}
+
+.container-copy-note{
+  margin:10px 0 0;
+  text-align:center;
+  color:#94A3B8;
+  font-size:11px;
+}
+
+.container-free-error{
+  padding:16px;
+  background:#FFF4F4;
+  border:1px solid #FFD7D7;
+  border-radius:11px;
+  color:#B42318;
+  font-size:13px;
+  line-height:1.5;
+}
 </style>
 </head>
 <body>
@@ -4159,18 +4258,170 @@ supabaseClient.auth.onAuthStateChange(() => {
 
 });
 </script>
- <script>
+
+
+    
+  <script>
 (() => {
 
   const containerForm = document.getElementById("containerForm");
-  const containerInput = document.getElementById("containerNumber");
-  const containerSubmitBtn = document.getElementById("containerSubmitBtn");
+  const containerNumberInput = document.getElementById("containerNumber");
+  const containerCarrierSelect = document.getElementById("containerCarrier");
   const containerResult = document.getElementById("containerResult");
 
   if (!containerForm) return;
 
 
-  function containerEsc(value = "") {
+  const carrierTrackers = {
+
+    "maersk": {
+      name: "Maersk",
+      url: number =>
+        "https://www.maersk.com/tracking/"
+    },
+
+    "msc": {
+      name: "MSC",
+      url: number =>
+        `https://www.msc.com/en/track-a-shipment?tnumber=${encodeURIComponent(number)}`
+    },
+
+    "cma-cgm": {
+      name: "CMA CGM",
+      url: number =>
+        "https://www.cma-cgm.com/ECommerce/ContainerTracking"
+    },
+
+    "hapag-lloyd": {
+      name: "Hapag-Lloyd",
+      url: number =>
+        `https://www.hapag-lloyd.com/en/online-business/import/import-overview-solution.html?container=${encodeURIComponent(number)}&view=S8510`
+    },
+
+    "one": {
+      name: "ONE - Ocean Network Express",
+      url: number =>
+        `https://ecomm.one-line.com/one-ecom/manage-shipment/cargo-tracking?ctrack-field=${encodeURIComponent(number)}&trakNoParam=${encodeURIComponent(number)}`
+    },
+
+    "cosco": {
+      name: "COSCO Shipping",
+      url: number =>
+        "https://e2ev.lines.coscoshipping.com/"
+    },
+
+    "evergreen": {
+      name: "Evergreen Marine",
+      url: number =>
+        "https://www.shipmentlink.com/"
+    },
+
+    "oocl": {
+      name: "OOCL",
+      url: number =>
+        "https://www.oocl.com/eng/ourservices/eservices/cargotracking/pages/cargotracking.aspx"
+    },
+
+    "yang-ming": {
+      name: "Yang Ming",
+      url: number =>
+        "https://www.yangming.com/en/esolution/tracking/cargo_tracking"
+    },
+
+    "zim": {
+      name: "ZIM",
+      url: number =>
+        `https://www.zim.com/tools/track-a-shipment?consnumbers=${encodeURIComponent(number)}`
+    },
+
+    "hmm": {
+      name: "HMM",
+      url: number =>
+        "https://www.hmm21.com/"
+    },
+
+    "pil": {
+      name: "PIL - Pacific International Lines",
+      url: number =>
+        "https://www.pilship.com/"
+    },
+
+    "wan-hai": {
+      name: "Wan Hai Lines",
+      url: number =>
+        "https://www.wanhai.com/"
+    },
+
+    "sitc": {
+      name: "SITC",
+      url: number =>
+        "https://booking.sitc.com/portal/?lang=en"
+    },
+
+    "sm-line": {
+      name: "SM Line",
+      url: number =>
+        "https://www.smlines.com/"
+    },
+
+    "seaboard": {
+      name: "Seaboard Marine",
+      url: number =>
+        "https://www.seaboardmarine.com/"
+    },
+
+    "crowley": {
+      name: "Crowley",
+      url: number =>
+        "https://www.crowley.com/"
+    },
+
+    "matson": {
+      name: "Matson",
+      url: number =>
+        "https://www.matson.com/"
+    },
+
+    "turkon": {
+      name: "Turkon Line",
+      url: number =>
+        "https://www.turkon.com/"
+    },
+
+    "arkas": {
+      name: "Arkas Line",
+      url: number =>
+        "https://www.arkasline.com.tr/"
+    },
+
+    "grimaldi": {
+      name: "Grimaldi Lines",
+      url: number =>
+        "https://www.grimaldi.napoli.it/"
+    },
+
+    "acl": {
+      name: "Atlantic Container Line - ACL",
+      url: number =>
+        "https://www.aclcargo.com/"
+    },
+
+    "swire": {
+      name: "Swire Shipping",
+      url: number =>
+        "https://www.swireshipping.com/"
+    },
+
+    "gold-star": {
+      name: "Gold Star Line",
+      url: number =>
+        "https://www.goldstarline.com/"
+    }
+
+  };
+
+
+  function safeContainerText(value = "") {
     return String(value)
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
@@ -4179,293 +4430,26 @@ supabaseClient.auth.onAuthStateChange(() => {
   }
 
 
-  function findContainerValue(source, possibleKeys) {
-
-    if (!source || typeof source !== "object") {
-      return "";
-    }
-
-    const wanted = possibleKeys.map(key =>
-      key.toLowerCase()
-    );
-
-    const queue = [source];
-    const visited = new Set();
-
-    while (queue.length) {
-
-      const current = queue.shift();
-
-      if (
-        !current ||
-        typeof current !== "object" ||
-        visited.has(current)
-      ) {
-        continue;
-      }
-
-      visited.add(current);
-
-      for (const [key, value] of Object.entries(current)) {
-
-        if (
-          wanted.includes(key.toLowerCase()) &&
-          value !== null &&
-          value !== "" &&
-          typeof value !== "object"
-        ) {
-          return String(value);
-        }
-      }
-
-      Object.values(current).forEach(value => {
-        if (value && typeof value === "object") {
-          queue.push(value);
-        }
-      });
-    }
-
-    return "";
-  }
-
-
-  function containerStatusName(status = "") {
-
-    const names = {
-      InProgress: "Procesando",
-      Booked: "Reservado",
-      Loaded: "Cargado en buque",
-      Sailing: "En navegación",
-      Arrived: "Llegó a destino",
-      Discharged: "Descargado",
-      Untracked: "No rastreable"
-    };
-
-    return names[status] || status || "Seguimiento activo";
-  }
-
-
-  function renderContainerData(payload, containerNumber) {
-
-    let data = payload?.data;
-
-    if (typeof data === "string") {
-      try {
-        data = JSON.parse(data);
-      } catch {
-        data = {};
-      }
-    }
-
-    if (Array.isArray(data)) {
-      data = data[0] || {};
-    }
-
-    data = data || {};
-
-
-    const statusRaw = findContainerValue(
-      data,
-      ["Status", "status", "StatusName", "statusName"]
-    );
-
-    const status = containerStatusName(statusRaw);
-
-
-    const carrier = findContainerValue(
-      data,
-      [
-        "ShippingLine",
-        "shippingLine",
-        "Carrier",
-        "carrier"
-      ]
-    );
-
-
-    const origin = findContainerValue(
-      data,
-      [
-        "POL",
-        "Pol",
-        "PortOfLoading",
-        "LoadingPort",
-        "Origin"
-      ]
-    );
-
-
-    const destination = findContainerValue(
-      data,
-      [
-        "POD",
-        "Pod",
-        "PortOfDischarge",
-        "DischargePort",
-        "Destination"
-      ]
-    );
-
-
-    const eta = findContainerValue(
-      data,
-      [
-        "ETA",
-        "Eta",
-        "eta",
-        "EstimatedArrival",
-        "ArrivalDate"
-      ]
-    );
-
-
-    const vessel = findContainerValue(
-      data,
-      [
-        "Vessel",
-        "VesselName",
-        "vessel",
-        "vesselName"
-      ]
-    );
-
-
-    const voyage = findContainerValue(
-      data,
-      [
-        "Voyage",
-        "VoyageNo",
-        "VoyageNumber",
-        "voyage"
-      ]
-    );
-
-
-    let statusClass = "";
-
-    if (
-      statusRaw === "Arrived" ||
-      statusRaw === "Discharged"
-    ) {
-      statusClass = "finished";
-    }
-
-    if (statusRaw === "Untracked") {
-      statusClass = "warning";
-    }
-
-
-    containerResult.innerHTML = `
-      <div class="container-summary-card">
-
-        <div class="container-overline">
-          Seguimiento marítimo
-        </div>
-
-        <div class="container-result-header">
-
-          <div>
-            <div class="container-result-carrier">
-              ${containerEsc(carrier || "Contenedor marítimo")}
-            </div>
-
-            <div class="container-result-number">
-              ${containerEsc(containerNumber)}
-            </div>
-          </div>
-
-          <span class="container-status-pill ${statusClass}">
-            ${containerEsc(status)}
-          </span>
-
-        </div>
-
-
-        ${
-          origin || destination
-            ? `
-              <div class="container-route-box">
-                <span>${containerEsc(origin || "Origen")}</span>
-                <span>→</span>
-                <span>${containerEsc(destination || "Destino")}</span>
-              </div>
-            `
-            : ""
-        }
-
-
-        <div class="container-details-grid">
-
-          ${
-            eta
-              ? `
-                <div class="container-detail">
-                  <div class="container-detail-label">
-                    Llegada estimada
-                  </div>
-                  <div class="container-detail-value">
-                    ${containerEsc(eta)}
-                  </div>
-                </div>
-              `
-              : ""
-          }
-
-          ${
-            vessel
-              ? `
-                <div class="container-detail">
-                  <div class="container-detail-label">
-                    Buque
-                  </div>
-                  <div class="container-detail-value">
-                    ${containerEsc(vessel)}
-                  </div>
-                </div>
-              `
-              : ""
-          }
-
-          ${
-            voyage
-              ? `
-                <div class="container-detail">
-                  <div class="container-detail-label">
-                    Viaje
-                  </div>
-                  <div class="container-detail-value">
-                    ${containerEsc(voyage)}
-                  </div>
-                </div>
-              `
-              : ""
-          }
-
-        </div>
-
-      </div>
-    `;
-
-    containerResult.classList.add("show");
-  }
-
-
   containerForm.addEventListener("submit", async (event) => {
 
     event.preventDefault();
 
-    const containerNumber = containerInput.value
+    const containerNumber = containerNumberInput.value
       .trim()
       .toUpperCase()
       .replace(/\s+/g, "");
 
+    const carrierCode = containerCarrierSelect.value;
 
+
+    // VALIDAR NUMERO
     if (!/^[A-Z]{4}[0-9]{7}$/.test(containerNumber)) {
 
       containerResult.innerHTML = `
-        <div class="container-error">
+        <div class="container-free-error">
           Revisá el número del contenedor.
-          Debe tener 4 letras y 7 números.
+          Debe contener <strong>4 letras y 7 números</strong>.
+          Ejemplo: MSKU1234567.
         </div>
       `;
 
@@ -4474,105 +4458,142 @@ supabaseClient.auth.onAuthStateChange(() => {
     }
 
 
-    containerSubmitBtn.disabled = true;
-    containerSubmitBtn.textContent = "Buscando...";
-
-    containerResult.innerHTML = `
-      <div class="container-processing">
-        🚢 Consultando información del contenedor...
-      </div>
-    `;
-
-    containerResult.classList.add("show");
-
-
-    try {
-
-      const response = await fetch("/api/container-track", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          containerNumber,
-          shippingLine: "OTHERS"
-        })
-      });
-
-
-      const payload = await response.json();
-
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(
-          payload.error ||
-          "No pudimos consultar el contenedor"
-        );
-      }
-
-
-      if (payload.created || payload.processing) {
-
-        containerResult.innerHTML = `
-          <div class="container-processing">
-
-            <strong>🚢 Seguimiento iniciado</strong>
-
-            <br><br>
-
-            ${containerEsc(containerNumber)} fue agregado al sistema de seguimiento.
-
-            <br><br>
-
-            ShipsGo está obteniendo la información de la naviera.
-            Volvé a tocar <strong>Rastrear contenedor</strong>
-            dentro de unos minutos para ver el recorrido.
-
-          </div>
-        `;
-
-        containerResult.classList.add("show");
-
-        return;
-      }
-
-
-      renderContainerData(
-        payload,
-        containerNumber
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Error rastreando contenedor:",
-        error
-      );
+    // SIN NAVIERA
+    if (!carrierCode) {
 
       containerResult.innerHTML = `
-        <div class="container-error">
-          ${containerEsc(
-            error.message ||
-            "No pudimos consultar este contenedor."
-          )}
+        <div class="container-free-error">
+          Seleccioná la naviera para consultar el seguimiento.
         </div>
       `;
 
       containerResult.classList.add("show");
-
-    } finally {
-
-      containerSubmitBtn.disabled = false;
-      containerSubmitBtn.textContent =
-        "Rastrear contenedor";
-
+      return;
     }
+
+
+    // OTRA / NO SE
+    if (carrierCode === "other") {
+
+      containerResult.innerHTML = `
+        <div class="container-free-error">
+          El número de contenedor por sí solo no permite identificar
+          de forma confiable qué naviera está transportándolo.
+
+          <br><br>
+
+          Revisá tu Booking, Bill of Lading o documentación del proveedor
+          y seleccioná la naviera correspondiente.
+        </div>
+      `;
+
+      containerResult.classList.add("show");
+      return;
+    }
+
+
+    const carrier = carrierTrackers[carrierCode];
+
+    if (!carrier) {
+
+      containerResult.innerHTML = `
+        <div class="container-free-error">
+          Todavía no tenemos configurado el rastreador oficial
+          de esta naviera.
+        </div>
+      `;
+
+      containerResult.classList.add("show");
+      return;
+    }
+
+
+    const officialUrl = carrier.url(containerNumber);
+
+
+    // COPIAR EL NUMERO PARA LAS NAVIERAS
+    // QUE NO PERMITEN PRECARGARLO EN SU WEB
+    try {
+      await navigator.clipboard.writeText(containerNumber);
+    } catch (error) {
+      console.log("No se pudo copiar automáticamente.");
+    }
+
+
+    containerResult.innerHTML = `
+
+      <div class="container-official-card">
+
+        <div class="container-official-overline">
+          Seguimiento marítimo
+        </div>
+
+
+        <div class="container-official-header">
+
+          <div>
+
+            <div class="container-official-carrier">
+              ${safeContainerText(carrier.name)}
+            </div>
+
+            <div class="container-official-number">
+              ${safeContainerText(containerNumber)}
+            </div>
+
+          </div>
+
+
+          <span class="container-valid-pill">
+            ✓ Número válido
+          </span>
+
+        </div>
+
+
+        <div class="container-official-info">
+
+          PackPing preparó el seguimiento de este contenedor.
+
+          <br><br>
+
+          Los datos de ubicación, movimientos, buque y ETA
+          serán consultados directamente en el sistema oficial
+          de <strong>${safeContainerText(carrier.name)}</strong>.
+
+        </div>
+
+
+        <a
+          class="container-official-btn"
+          href="${safeContainerText(officialUrl)}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Ver seguimiento oficial ↗
+        </a>
+
+
+        <p class="container-copy-note">
+          📋 ${safeContainerText(containerNumber)} fue copiado automáticamente.
+          Si la naviera no completa el campo, simplemente pegalo.
+        </p>
+
+      </div>
+
+    `;
+
+    containerResult.classList.add("show");
+
+    containerResult.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
 
   });
 
 })();
-</script> 
+</script>
 </body>
 </html>
 
