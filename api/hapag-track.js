@@ -117,13 +117,15 @@ export default async function handler(req, res) {
       }
     });
 
-    if (!response.ok) {
-      return res.status(502).json({
-        ok: false,
-        error: "Hapag-Lloyd no respondió correctamente",
-        officialUrl
-      });
-    }
+   if (!response.ok) {
+  return res.status(502).json({
+    ok: false,
+    error: "Hapag-Lloyd no respondió correctamente",
+    hapagStatus: response.status,
+    hapagStatusText: response.statusText,
+    officialUrl
+  });
+}
 
     const html = await response.text();
     const text = cleanText(html);
