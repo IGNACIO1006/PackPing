@@ -3167,15 +3167,15 @@ referenceInlineSaveBtn.addEventListener("click", async () => {
 } catch (error) {
 
   result.innerHTML = `
-    <span class="result-tag">No pudimos encontrar el envío</span>
+    <span class="result-tag">Seguimiento no disponible</span>
 
     <div class="result-top">
       <span class="result-title">${safe(trackingNumber)}</span>
     </div>
 
     <p class="result-msg">
-      ${safe(error.message)}
-    </p>
+  No pudimos obtener la información de seguimiento en este momento.
+</p>
 
     <p class="result-meta">
       Revisá el número de seguimiento o probá seleccionando la transportista.
