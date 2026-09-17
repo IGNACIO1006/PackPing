@@ -1885,6 +1885,31 @@ body
   font-size:13px;
   line-height:1.5;
 }
+    .container-valid-pill.warning{
+  background:#FFF4E5;
+  color:#B76A00;
+}
+
+.container-check-warning{
+  margin-top:18px;
+  padding:14px;
+  border:1px solid #F6D697;
+  border-radius:11px;
+  background:#FFF9ED;
+  color:#7A5100;
+  font-size:13px;
+  line-height:1.55;
+}
+
+.container-info-note{
+  padding:16px;
+  border:1px solid #D5E1FF;
+  border-radius:11px;
+  background:#EEF4FF;
+  color:#334155;
+  font-size:13px;
+  line-height:1.55;
+}
 </style>
 </head>
 <body>
@@ -4428,6 +4453,52 @@ supabaseClient.auth.onAuthStateChange(() => {
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;");
   }
+  function validateContainerISO6346(number) {
+
+  const formatValid = /^[A-Z]{3}[UJZ][0-9]{7}$/.test(number);
+
+  if (!formatValid) {
+    return {
+      formatValid: false,
+      checkDigitValid: false,
+      expectedCheckDigit: null
+    };
+  }
+
+  const values = {
+    A:10, B:12, C:13, D:14, E:15, F:16, G:17,
+    H:18, I:19, J:20, K:21, L:23, M:24, N:25,
+    O:26, P:27, Q:28, R:29, S:30, T:31, U:32,
+    V:34, W:35, X:36, Y:37, Z:38
+  };
+
+  const base = number.slice(0, 10);
+  const providedCheckDigit = Number(number[10]);
+
+  let total = 0;
+
+  for (let i = 0; i < base.length; i++) {
+    const character = base[i];
+
+    const value =
+      /[0-9]/.test(character)
+        ? Number(character)
+        : values[character];
+
+    total += value * Math.pow(2, i);
+  }
+
+  const remainder = total % 11;
+  const expectedCheckDigit =
+    remainder === 10 ? 0 : remainder;
+
+  return {
+    formatValid: true,
+    checkDigitValid:
+      providedCheckDigit === expectedCheckDigit,
+    expectedCheckDigit
+  };
+}
 
 
   containerForm.addEventListener("submit", async (event) => {
@@ -4443,19 +4514,29 @@ supabaseClient.auth.onAuthStateChange(() => {
 
 
     // VALIDAR NUMERO
-    if (!/^[A-Z]{4}[0-9]{7}$/.test(containerNumber)) {
+   const isoValidation =
+  validateContainerISO6346(containerNumber);
 
-      containerResult.innerHTML = `
-        <div class="container-free-error">
-          Revisá el número del contenedor.
-          Debe contener <strong>4 letras y 7 números</strong>.
-          Ejemplo: MSKU1234567.
-        </div>
-      `;
+if (!isoValidation.formatValid) {
 
-      containerResult.classList.add("show");
-      return;
-    }
+  containerResult.innerHTML = `
+    <div class="container-info-note">
+      <strong>No pudimos identificar la naviera</strong>
+
+<br><br>
+
+Revisá tu Booking, Bill of Lading o documentación del embarque
+y seleccioná la naviera correspondiente.
+
+      <br>
+
+      Ejemplo: MSKU1234567.
+    </div>
+  `;
+
+  containerResult.classList.add("show");
+  return;
+}
 
 
     // SIN NAVIERA
@@ -4544,13 +4625,39 @@ supabaseClient.auth.onAuthStateChange(() => {
           </div>
 
 
-          <span class="container-valid-pill">
-            ✓ Número válido
-          </span>
+          <span class="container-valid-pill ${
+  isoValidation.checkDigitValid ? "" : "warning"
+}">
+  ${
+    isoValidation.checkDigitValid
+      ? "✓ Número válido"
+      : "⚠ Revisar número"
+  }
+</span>
 
         </div>
 
+${
+  !isoValidation.checkDigitValid
+    ? `
+      <div class="container-check-warning">
+        <strong>El dígito de control no coincide.</strong>
 
+        <br><br>
+
+        El número ingresado termina en
+        <strong>${safeContainerText(containerNumber.slice(-1))}</strong>,
+        pero según el cálculo ISO 6346 debería terminar en
+        <strong>${isoValidation.expectedCheckDigit}</strong>.
+
+        <br><br>
+
+        Revisá el número en la puerta del contenedor,
+        Booking o Bill of Lading antes de continuar.
+      </div>
+    `
+    : ""
+}
         <div class="container-official-info">
 
           PackPing preparó el seguimiento de este contenedor.
