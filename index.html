@@ -1910,6 +1910,42 @@ body
   font-size:13px;
   line-height:1.55;
 }
+    .container-details-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:20px 0;
+}
+
+.container-detail-item{
+  padding:14px;
+  border:1px solid #e3e9f5;
+  border-radius:12px;
+  background:#f8faff;
+}
+
+.container-detail-item span{
+  display:block;
+  margin-bottom:6px;
+  color:#7b8aa5;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+
+.container-detail-item strong{
+  display:block;
+  color:#0b234a;
+  font-size:14px;
+  line-height:1.4;
+}
+
+@media (max-width:600px){
+  .container-details-grid{
+    grid-template-columns:1fr;
+  }
+}
+  
 </style>
 </head>
 <body>
@@ -4590,6 +4626,16 @@ y seleccioná la naviera correspondiente.
 
 
     const officialUrl = carrier.url(containerNumber);
+    const equipmentCode = containerNumber.charAt(3);
+
+const equipmentType =
+  equipmentCode === "U"
+    ? "Contenedor de carga"
+    : equipmentCode === "J"
+    ? "Equipo auxiliar"
+    : equipmentCode === "Z"
+    ? "Chasis / remolque"
+    : "Equipo marítimo";
 
 
     // COPIAR EL NUMERO PARA LAS NAVIERAS
@@ -4601,95 +4647,118 @@ y seleccioná la naviera correspondiente.
     }
 
 
-    containerResult.innerHTML = `
+    
+containerResult.innerHTML = `
+  <div class="container-official-card">
 
-      <div class="container-official-card">
+    <div class="container-official-overline">
+      🚢 Seguimiento marítimo
+    </div>
 
-        <div class="container-official-overline">
-          Seguimiento marítimo
+    <div class="container-official-header">
+
+      <div>
+        <div class="container-official-carrier">
+          ${safeContainerText(carrier.name)}
         </div>
 
+        <div class="container-official-number">
+          ${safeContainerText(containerNumber)}
+        </div>
+      </div>
 
-        <div class="container-official-header">
+      <span class="container-valid-pill ${
+        isoValidation.checkDigitValid ? "" : "warning"
+      }">
+        ${
+          isoValidation.checkDigitValid
+            ? "✓ Número ISO válido"
+            : "⚠ Revisar número"
+        }
+      </span>
 
-          <div>
+    </div>
 
-            <div class="container-official-carrier">
-              ${safeContainerText(carrier.name)}
-            </div>
+    ${
+      !isoValidation.checkDigitValid
+        ? `
+          <div class="container-check-warning">
+            <strong>El dígito de control no coincide.</strong>
 
-            <div class="container-official-number">
-              ${safeContainerText(containerNumber)}
-            </div>
+            <br><br>
 
+            El número ingresado termina en
+            <strong>${safeContainerText(containerNumber.slice(-1))}</strong>,
+            pero según ISO 6346 debería terminar en
+            <strong>${isoValidation.expectedCheckDigit}</strong>.
+
+            <br><br>
+
+            Revisá el número en el contenedor,
+            Booking o Bill of Lading antes de continuar.
           </div>
+        `
+        : ""
+    }
 
+    <div class="container-details-grid">
 
-          <span class="container-valid-pill ${
-  isoValidation.checkDigitValid ? "" : "warning"
-}">
-  ${
-    isoValidation.checkDigitValid
-      ? "✓ Número válido"
-      : "⚠ Revisar número"
-  }
-</span>
-
-        </div>
-
-${
-  !isoValidation.checkDigitValid
-    ? `
-      <div class="container-check-warning">
-        <strong>El dígito de control no coincide.</strong>
-
-        <br><br>
-
-        El número ingresado termina en
-        <strong>${safeContainerText(containerNumber.slice(-1))}</strong>,
-        pero según el cálculo ISO 6346 debería terminar en
-        <strong>${isoValidation.expectedCheckDigit}</strong>.
-
-        <br><br>
-
-        Revisá el número en la puerta del contenedor,
-        Booking o Bill of Lading antes de continuar.
-      </div>
-    `
-    : ""
-}
-        <div class="container-official-info">
-
-          PackPing preparó el seguimiento de este contenedor.
-
-          <br><br>
-
-          Los datos de ubicación, movimientos, buque y ETA
-          serán consultados directamente en el sistema oficial
-          de <strong>${safeContainerText(carrier.name)}</strong>.
-
-        </div>
-
-
-        <a
-          class="container-official-btn"
-          href="${safeContainerText(officialUrl)}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Ver seguimiento oficial ↗
-        </a>
-
-
-        <p class="container-copy-note">
-          📋 ${safeContainerText(containerNumber)} fue copiado automáticamente.
-          Si la naviera no completa el campo, simplemente pegalo.
-        </p>
-
+      <div class="container-detail-item">
+        <span>CONTENEDOR</span>
+        <strong>${safeContainerText(containerNumber)}</strong>
       </div>
 
-    `;
+      <div class="container-detail-item">
+        <span>TIPO DE EQUIPO</span>
+        <strong>
+          ${safeContainerText(equipmentCode)} ·
+          ${safeContainerText(equipmentType)}
+        </strong>
+      </div>
 
+      <div class="container-detail-item">
+        <span>NAVIERA</span>
+        <strong>${safeContainerText(carrier.name)}</strong>
+      </div>
+
+      <div class="container-detail-item">
+        <span>FUENTE DEL SEGUIMIENTO</span>
+        <strong>${safeContainerText(carrier.name)} oficial</strong>
+      </div>
+
+    </div>
+
+    <div class="container-official-info">
+      PackPing verificó el formato del contenedor.
+
+      <br><br>
+
+      Los movimientos, ubicación, buque y ETA se consultan
+      directamente en el sistema oficial de
+      <strong>${safeContainerText(carrier.name)}</strong>.
+    </div>
+
+    <a
+      class="container-official-btn"
+      href="${safeContainerText(officialUrl)}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Ver movimientos en ${safeContainerText(carrier.name)} ↗
+    </a>
+
+    <p class="container-copy-note">
+      📋 <strong>${safeContainerText(containerNumber)}</strong>
+      fue copiado automáticamente.
+
+      <br>
+
+      Si la naviera no completa el campo automáticamente,
+      simplemente pegalo.
+    </p>
+
+  </div>
+`;
     containerResult.classList.add("show");
 
     containerResult.scrollIntoView({
