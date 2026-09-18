@@ -2728,14 +2728,52 @@ const serviceName =
 const timelineHTML = recentCheckpoints.length
   ? recentCheckpoints.map(checkpoint => {
 
-      const stage =
-        getTrackingStage(tracking, checkpoint);
+     const text =
+  checkpoint.subtag_message ||
+  checkpoint.message ||
+  statusNames[checkpoint.tag] ||
+  "Actualización del envío";
 
-      const text =
-        checkpoint.subtag_message ||
-        checkpoint.message ||
-        statusNames[checkpoint.tag] ||
-        "Actualización del envío";
+let stage =
+  getTrackingStage(tracking, checkpoint);
+
+// Colores específicos para eventos de Correo Uruguayo
+if (
+  String(tracking.slug || "")
+    .toLowerCase()
+    .includes("correo uruguayo")
+) {
+  const correoText = String(text)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase();
+
+  // VERDE = entregado
+  if (
+    /ENTREGADO|ENTREGADA|ENTREGA AL DESTINATARIO/.test(correoText)
+  ) {
+    stage = "delivered";
+  }
+
+  // AZUL = llegó al país / proceso internacional
+  else if (
+    /ARRIBO AL PAIS|LLEGADA AL PAIS|LLEGO AL PAIS|ARRIBO A URUGUAY|ADUANA|CENTRO INTERNACIONAL/.test(correoText)
+  ) {
+    stage = "destination";
+  }
+
+  // GRIS = información inicial / ingreso al correo
+  else if (
+    /INGRESO A CORREO URUGUAYO|INFORMACION RECIBIDA|PREAVISO|ADMISION/.test(correoText)
+  ) {
+    stage = "waiting";
+  }
+
+  // AMARILLO = recepción, tránsito, clasificación, distribución, etc.
+  else {
+    stage = "transit";
+  }
+}
 
       const eventLocation =
         checkpoint.location ||
