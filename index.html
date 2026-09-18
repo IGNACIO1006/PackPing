@@ -1945,6 +1945,37 @@ body
     grid-template-columns:1fr;
   }
 }
+    /* ===== COLORES TIMELINE PACKPING ===== */
+
+/* Gris - información recibida / ingreso inicial */
+.tracking-event.stage-waiting .tracking-event-dot{
+  border-color:#9ca3af;
+  background:#e5e7eb;
+}
+
+/* Amarillo - en tránsito / recepción / distribución */
+.tracking-event.stage-transit .tracking-event-dot{
+  border-color:#f59e0b;
+  background:#fbbf24;
+}
+
+/* Azul - llegada al país / aduana / destino internacional */
+.tracking-event.stage-destination .tracking-event-dot{
+  border-color:#2563eb;
+  background:#3b82f6;
+}
+
+/* Verde - entregado */
+.tracking-event.stage-delivered .tracking-event-dot{
+  border-color:#16a34a;
+  background:#22c55e;
+}
+
+/* Rojo - problema / devolución / incidencia */
+.tracking-event.stage-exception .tracking-event-dot{
+  border-color:#dc2626;
+  background:#ef4444;
+}
   
 </style>
 </head>
