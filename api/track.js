@@ -22,12 +22,42 @@ module.exports = async function handler(req, res) {
     .trim()
     .toLowerCase();
 
-  const isCorreoUruguayo = [
+  function detectCarrierFromTracking(number) {
+  const value = String(number || "")
+    .trim()
+    .toUpperCase();
+
+  // Correo Uruguayo
+  if (/^[A-Z]{2}[0-9]{9}UY$/.test(value)) {
+    return "correo-uy";
+  }
+
+  // UPS - preparado para cuando integremos UPS directamente
+  if (/^1Z[A-Z0-9]{16}$/.test(value)) {
+    return "ups";
+  }
+
+  return null;
+}
+
+const detectedCarrier =
+  detectCarrierFromTracking(cleanTracking);
+
+const isAutoCarrier =
+  normalizedCarrier === "auto" ||
+  normalizedCarrier === "";
+
+const isCorreoUruguayo =
+  [
     "correo uruguayo",
     "correo-uy",
     "correo_uy",
     "correo"
-  ].includes(normalizedCarrier);
+  ].includes(normalizedCarrier) ||
+  (
+    isAutoCarrier &&
+    detectedCarrier === "correo-uy"
+  );
 
   // =====================================================
   // CORREO URUGUAYO - DIRECTO, SIN AFTERSHIP
