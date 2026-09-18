@@ -108,8 +108,7 @@ if (
   tag = "Delivered";
 } else if (
   /ASIGNADO A DISTR|SALIDA A REPARTO|SALIO A REPARTO|EN_PROCESO_ENTREGA/.test(latestText)
-) {
-  tag = "OutForDelivery";
+) {tag = "InTransit";
 } else if (
   /DEVUELTO|RECHAZADO|NO ENTREGADO|INTENTO FALLIDO|ERROR|INCIDENCIA/.test(latestText)
 ) {
