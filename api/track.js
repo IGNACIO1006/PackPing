@@ -95,16 +95,56 @@ module.exports = async function handler(req, res) {
         "s-maxage=60, stale-while-revalidate=120"
       );
 
-      return res.status(200).json({
-        ok: true,
-        source: "correo-uruguayo",
-        carrier: "Correo Uruguayo",
-        trackingNumber: cleanTracking,
-        state: shipment.estado || null,
-        deliveryStage: shipment.codigoEtapaEntrega || null,
-        latestEvent,
-        events
-      });
+    const latestText = `
+  ${latestEvent?.message || ""}
+  ${shipment.codigoEtapaEntrega || ""}
+`.toUpperCase();
+
+let tag = "InTransit";
+
+if (
+  /ENTREGADO|ENTREGADA|ENTREGA AL DESTINATARIO/.test(latestText)
+) {
+  tag = "Delivered";
+} else if (
+  /ASIGNADO A DISTR|SALIDA A REPARTO|SALIO A REPARTO|EN_PROCESO_ENTREGA/.test(latestText)
+) {
+  tag = "OutForDelivery";
+} else if (
+  /DEVUELTO|RECHAZADO|NO ENTREGADO|INTENTO FALLIDO|ERROR|INCIDENCIA/.test(latestText)
+) {
+  tag = "Exception";
+}
+
+const checkpoints = [...events]
+  .reverse()
+  .map(event => ({
+    checkpoint_time: event.date,
+    message: event.message,
+    subtag_message: event.message,
+    location: event.location,
+    city: null,
+    state: null,
+    country_region_name: "Uruguay"
+  }));
+
+return res.status(200).json({
+  source: "correo-uruguayo",
+
+  data: {
+    tracking: {
+      tracking_number: cleanTracking,
+      slug: "Correo Uruguayo",
+      tag,
+
+      subtag_message:
+        latestEvent?.message ||
+        "Seguimiento actualizado por Correo Uruguayo",
+
+      checkpoints
+    }
+  }
+});
 
     } catch (error) {
       console.error("Correo Uruguayo tracking error:", error);
