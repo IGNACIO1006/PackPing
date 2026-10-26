@@ -187,7 +187,160 @@ return res.status(200).json({
   // =====================================================
   // RESTO DE TRANSPORTISTAS - AFTERSHIP TEMPORALMENTE
   // =====================================================
+// =====================================================
+// FEDEX - TRACE API
+// =====================================================
 
+const isFedEx =
+  normalizedCarrier === "fedex";
+
+if (isFedEx) {
+  const traceApiKey = process.env.TRACE_API_KEY;
+
+  if (!traceApiKey) {
+    return res.status(500).json({
+      error: "El seguimiento de FedEx no está configurado"
+    });
+  }
+
+  try {
+    const traceResponse = await fetch(
+      "https://api.traceapi.dev/v1/track",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${traceApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          tracking_number: cleanTracking,
+          carrier: "fedex",
+          allow_stale: true
+        })
+      }
+    );
+
+    const traceData = await traceResponse.json();
+
+    if (!traceResponse.ok) {
+      return res.status(traceResponse.status).json({
+        error:
+          traceData?.error ||
+          traceData?.message ||
+          "No pudimos consultar este envío de FedEx"
+      });
+    }
+
+    function traceStatusToTag(status) {
+      switch (String(status || "").toLowerCase()) {
+        case "delivered":
+          return "Delivered";
+
+        case "out_for_delivery":
+          return "OutForDelivery";
+
+        case "exception":
+          return "Exception";
+
+        case "available_for_pickup":
+          return "AvailableForPickup";
+
+        case "pending":
+          return "Pending";
+
+        case "info_received":
+          return "InfoReceived";
+
+        case "in_transit":
+        case "customs":
+        default:
+          return "InTransit";
+      }
+    }
+
+    const traceEvents =
+      Array.isArray(traceData.events)
+        ? traceData.events
+        : [];
+
+    const checkpoints = traceEvents.map(event => {
+      const locationParts = String(event.location || "")
+        .split(",")
+        .map(part => part.trim())
+        .filter(Boolean);
+
+      return {
+        checkpoint_time:
+          event.timestamp ||
+          event.timestamp_local ||
+          null,
+
+        message:
+          event.description ||
+          "Actualización del envío",
+
+        subtag_message:
+          event.description ||
+          "Actualización del envío",
+
+        tag: traceStatusToTag(event.status),
+
+        location:
+          event.location || null,
+
+        city:
+          locationParts[0] || null,
+
+        state:
+          locationParts.length >= 3
+            ? locationParts[1]
+            : null,
+
+        country_region_name:
+          locationParts.length >= 2
+            ? locationParts[locationParts.length - 1]
+            : null
+      };
+    });
+
+    const latest =
+      checkpoints.length
+        ? checkpoints[checkpoints.length - 1]
+        : null;
+
+    return res.status(200).json({
+      source: "trace-api",
+
+      data: {
+        tracking: {
+          tracking_number: traceData.tracking_number,
+          slug:
+            traceData.carrier?.name ||
+            "FedEx",
+
+          tag:
+            traceStatusToTag(traceData.status),
+
+          subtag_message:
+            latest?.message ||
+            "Seguimiento actualizado por FedEx",
+
+          checkpoints,
+
+          expected_delivery:
+            traceData.estimated_delivery || null
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("FedEx / Trace API error:", error);
+
+    return res.status(500).json({
+      error: "No pudimos consultar FedEx"
+    });
+  }
+}
   const apiKey = process.env.AFTERSHIP_API_KEY;
 
   if (!apiKey) {
