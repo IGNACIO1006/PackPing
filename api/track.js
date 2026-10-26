@@ -191,10 +191,12 @@ return res.status(200).json({
 // FEDEX - TRACE API
 // =====================================================
 
-const isFedEx =
-  normalizedCarrier === "fedex";
+const useTraceApi =
+  normalizedCarrier === "fedex" ||
+  normalizedCarrier === "auto" ||
+  normalizedCarrier === "";
 
-if (isFedEx) {
+if (useTraceApi) {
   const traceApiKey = process.env.TRACE_API_KEY;
 
   if (!traceApiKey) {
@@ -212,11 +214,13 @@ if (isFedEx) {
           Authorization: `Bearer ${traceApiKey}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          tracking_number: cleanTracking,
-          carrier: "fedex",
-          allow_stale: true
-        })
+      body: JSON.stringify({
+  tracking_number: cleanTracking,
+  ...(normalizedCarrier === "fedex"
+    ? { carrier: "fedex" }
+    : {}),
+  allow_stale: true
+})
       }
     );
 
