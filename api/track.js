@@ -191,8 +191,17 @@ return res.status(200).json({
 // FEDEX - TRACE API
 // =====================================================
 
+const traceCarrierMap = {
+  fedex: "fedex",
+  dhl: "dhl",
+  ups: "ups"
+};
+
+const selectedTraceCarrier =
+  traceCarrierMap[normalizedCarrier] || null;
+
 const useTraceApi =
-  normalizedCarrier === "fedex" ||
+  Boolean(selectedTraceCarrier) ||
   normalizedCarrier === "auto" ||
   normalizedCarrier === "";
 
@@ -201,7 +210,7 @@ if (useTraceApi) {
 
   if (!traceApiKey) {
     return res.status(500).json({
-      error: "El seguimiento de FedEx no está configurado"
+      error: "El servicio de seguimiento no está configurado"
     });
   }
 
@@ -216,8 +225,8 @@ if (useTraceApi) {
         },
       body: JSON.stringify({
   tracking_number: cleanTracking,
-  ...(normalizedCarrier === "fedex"
-    ? { carrier: "fedex" }
+  ...(selectedTraceCarrier
+    ? { carrier: selectedTraceCarrier }
     : {}),
   allow_stale: true
 })
@@ -231,7 +240,7 @@ if (useTraceApi) {
         error:
           traceData?.error ||
           traceData?.message ||
-          "No pudimos consultar este envío de FedEx"
+          "No pudimos consultar este envío"
       });
     }
 
@@ -338,10 +347,11 @@ if (useTraceApi) {
     });
 
   } catch (error) {
-    console.error("FedEx / Trace API error:", error);
+   console.error("Trace API error:", error);
 
     return res.status(500).json({
-      error: "No pudimos consultar FedEx"
+     error: "No pudimos consultar el seguimiento"
+    
     });
   }
 }
