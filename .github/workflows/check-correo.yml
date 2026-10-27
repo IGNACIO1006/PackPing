@@ -1,0 +1,21 @@
+name: Revisar Correo Uruguayo
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+
+  workflow_dispatch:
+
+jobs:
+  check-correo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Consultar envíos de Correo Uruguayo
+        env:
+          CRON_SECRET: ${{ secrets.CORREO_CRON_SECRET }}
+
+        run: |
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "https://pack-ping.vercel.app/api/check-correo-notifications"
