@@ -230,6 +230,7 @@ if (useTraceApi) {
     : {}),
   allow_stale: true
 })
+        signal: AbortSignal.timeout(25000),
       }
     );
 
@@ -346,14 +347,20 @@ if (useTraceApi) {
       }
     });
 
-  } catch (error) {
-   console.error("Trace API error:", error);
+} catch (error) {
+  console.error("Trace API error:", error);
 
-    return res.status(500).json({
-     error: "No pudimos consultar el seguimiento"
-    
+  if (error?.name === "TimeoutError") {
+    return res.status(504).json({
+      error:
+        "El servicio de seguimiento está demorando más de lo habitual. Probá nuevamente en unos minutos."
     });
   }
+
+  return res.status(500).json({
+    error: "No pudimos consultar el seguimiento"
+  });
+}
 }
   const apiKey = process.env.AFTERSHIP_API_KEY;
 
