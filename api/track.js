@@ -234,7 +234,23 @@ if (useTraceApi) {
       }
     );
 
-    const traceData = await traceResponse.json();
+   const rawTraceResponse = await traceResponse.text();
+
+let traceData;
+
+try {
+  traceData = JSON.parse(rawTraceResponse);
+} catch (parseError) {
+  console.error("Trace devolvió una respuesta no JSON:", {
+    status: traceResponse.status,
+    body: rawTraceResponse.slice(0, 200)
+  });
+
+  return res.status(503).json({
+    error:
+      "El servicio de seguimiento está temporalmente fuera de servicio. Probá nuevamente en unos minutos."
+  });
+}
 
     if (!traceResponse.ok) {
       return res.status(traceResponse.status).json({
