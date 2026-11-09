@@ -1977,6 +1977,24 @@ body
   border-color:#dc2626;
   background:#ef4444;
 }
+
+    .official-fallback-btn{
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  margin-top:16px;
+  padding:13px 18px;
+  border-radius:10px;
+  background:#2f66e8;
+  color:#fff;
+  text-align:center;
+  text-decoration:none;
+  font-weight:700;
+}
+
+.official-fallback-btn:hover{
+  opacity:.92;
+}
   
 </style>
 </head>
@@ -2603,7 +2621,44 @@ function formatDate(value) {
     timeStyle: "short"
   });
 }
+function getOfficialTrackingPage(carrier, trackingNumber) {
+  const carrierName = String(carrier || "")
+    .trim()
+    .toLowerCase();
 
+  const number = String(trackingNumber || "")
+    .trim()
+    .toUpperCase();
+
+  if (carrierName === "fedex") {
+    return {
+      name: "FedEx",
+      url: "https://www.fedex.com/es-uy/home.html"
+    };
+  }
+
+  if (
+    carrierName === "ups" ||
+    (
+      carrierName === "auto" &&
+      /^1Z[A-Z0-9]{16}$/.test(number)
+    )
+  ) {
+    return {
+      name: "UPS",
+      url: "https://www.ups.com/uy/es/home"
+    };
+  }
+
+  if (carrierName === "dhl") {
+    return {
+      name: "DHL",
+      url: "https://www.dhl.com/uy-es/home/tracking.html"
+    };
+  }
+
+  return null;
+}
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -3235,22 +3290,59 @@ referenceInlineSaveBtn.addEventListener("click", async () => {
 });
 }
 } catch (error) {
+    const officialFallback =
+  getOfficialTrackingPage(
+    carrier,
+    trackingNumber
+  );
 
-  result.innerHTML = `
-    <span class="result-tag">Seguimiento no disponible</span>
+ result.innerHTML = `
+  <span class="result-tag">
+    Seguimiento temporalmente no disponible
+  </span>
 
-    <div class="result-top">
-      <span class="result-title">${safe(trackingNumber)}</span>
-    </div>
+  <div class="result-top">
+    <span class="result-title">
+      ${safe(trackingNumber)}
+    </span>
+  </div>
 
-    <p class="result-msg">
-  No pudimos obtener la información de seguimiento en este momento.
-</p>
+  <p class="result-msg">
+    El servicio de seguimiento está teniendo problemas
+    en este momento.
+  </p>
 
-    <p class="result-meta">
-      Revisá el número de seguimiento o probá seleccionando la transportista.
-    </p>
-  `;
+  ${
+    officialFallback
+      ? `
+        <p class="result-meta">
+          Mientras tanto podés consultar el envío
+          directamente en ${safe(officialFallback.name)}.
+        </p>
+
+        <a
+          href="${officialFallback.url}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="official-fallback-btn"
+        >
+          Ver seguimiento oficial en
+          ${safe(officialFallback.name)} ↗
+        </a>
+
+        <p class="result-meta">
+          Número:
+          <strong>${safe(trackingNumber)}</strong>
+        </p>
+      `
+      : `
+        <p class="result-meta">
+          Probá nuevamente en unos minutos o
+          seleccioná manualmente la transportista.
+        </p>
+      `
+  }
+`;
 
   result.classList.add("show");
 
