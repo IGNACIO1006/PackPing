@@ -229,7 +229,7 @@ if (useTraceApi) {
     ? { carrier: selectedTraceCarrier }
     : {}),
   allow_stale: true
-})
+}),
         signal: AbortSignal.timeout(25000),
       }
     );
