@@ -2689,6 +2689,8 @@ form.addEventListener('submit', async (e) => {
     });
 
     const payload = await response.json();
+    console.log("TRACK STATUS:", response.status);
+console.log("TRACK PAYLOAD:", payload);
 
     if (!response.ok) {
       throw new Error(
